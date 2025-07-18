@@ -1,5 +1,11 @@
 test.py
 .vscode
 NON-CODE
-INPUT_DATA
+INPUT_DATA/__pycache__
+INPUT_DATA/FirstNames.txt
+INPUT_DATA/LastNames.txt
+INPUT_DATA/periods.json
+INPUT_DATA/Pupil_data.xlsx
+INPUT_DATA/Pupil_Timetable_Data.xlsx
+INPUT_DATA/Set_Timetable_Data.xlsx
 faces
