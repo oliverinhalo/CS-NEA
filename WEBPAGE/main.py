@@ -21,10 +21,36 @@ def add_to_remember_me(user_id):
     Mac = request.headers.get('X-Forwarded-For', request.remote_addr)
     DB_interface.execute_query("INSERT INTO SIGNS (UserID, MAC_ID, Date, DeviceID) VALUES (?, ?, ?, ?)", (user_id, Mac, datetime.now(), "WEBSITE"))
 
+def get_time_table(user_id):
+    timeTableID = DB_interface.get_data("SELECT TimeTableID FROM STUDENT_INFO WHERE UserID = ?", (user_id,))[0][0]
+    data = DB_interface.get_data("""
+    SELECT 
+        TIMETABLE.Day,
+        TIMETABLE.Start,
+        TIMETABLE.End,
+        SUBJECTS.Name,
+        LOCATIONS.LocationName,
+        TIMETABLE.Week,
+        substr(ACCOUNTS.FirstName, 1, 1) || '. ' || ACCOUNTS.LastName
+    FROM 
+        TIMETABLE
+    JOIN 
+        SUBJECTS ON TIMETABLE.SubjectID = SUBJECTS.SubjectID
+    JOIN 
+        LOCATIONS ON TIMETABLE.LocationID = LOCATIONS.LocationID
+    JOIN 
+        ACCOUNTS ON SUBJECTS.UserID = ACCOUNTS.UserID
+    WHERE 
+        TIMETABLE.TimeTableID = ?
+    ORDER BY 
+        TIMETABLE.Week, TIMETABLE.Day, TIMETABLE.Start;
+
+        """, (timeTableID,))
+    return data
+
 @app.route('/home', methods=['GET'])
 def home():
-
-    return render_template('home.html', user_id=session['user_id'])
+    return render_template('home.html', timeTable=get_time_table(session['user_id']))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

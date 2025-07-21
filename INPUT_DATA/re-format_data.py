@@ -209,3 +209,17 @@ for pupil in Pupil_data:
         "INSERT INTO STUDENT_INFO (UserID, Form, House, TimeTableID) VALUES (?,?,?,?)",
         (pupil['Pupil ID'], pupil['Form'], pupil['Boarding House'], TTID)
         )
+
+data = DB_interface.get_data("SELECT UserID FROM SUBJECTS")
+
+data = [row[0] for row in data]
+
+for teach in set(data):
+    print(teach)
+    f = "FirstName"+str(teach)
+    l = "LastName"+str(teach)
+    se = f+l+"@school-teacher.com"
+    DB_interface.execute_query(
+        "INSERT INTO ACCOUNTS (UserID, RoleID, FirstName, LastName, SchoolEmail, Password, Gender) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (teach,1,f,l,se, "password","M/F")
+        )
