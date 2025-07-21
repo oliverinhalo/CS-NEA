@@ -1,0 +1,104 @@
+.toggle-buttons {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.toggle-buttons button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: #ccc;
+}
+
+.toggle-buttons .active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.error {
+    color: red;
+    font-size: 200%;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.login-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+.password-label {
+    display: block;
+    margin-bottom: 10px;
+}
+.email-label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.input {
+    width: 95%;
+    padding: 10px;
+    font-size: 1rem;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.title {
+    font-size: 4rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+body {
+    vertical-align: middle;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background: #2A7B9B;
+    background: linear-gradient(90deg, rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
+    margin: 0;
+    padding: 20px;
+    animation: fadeIn 0.75s ease-in-out;
+}
+
+.form-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.remember-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-bottom button {
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.rememberMe {
+    width: 20px;
+    height: 20px;
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

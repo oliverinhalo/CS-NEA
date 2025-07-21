@@ -144,7 +144,8 @@ for pupil in Pupil_data:
 
     last = random.choice(last_names)
     email = f"{first.lower()}.{last.lower()}@school.co.uk"
-    password = hash(pwo.generate())
+    password = pwo.generate()
+    password = hashlib.sha256(password.encode()).hexdigest()
 
     attempts = 0
     while True:

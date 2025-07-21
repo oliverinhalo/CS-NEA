@@ -1,0 +1,8 @@
+flask
+requests
+pandas
+gender-guesser
+password-generator
+numpy
+opencv-python
+deepface
