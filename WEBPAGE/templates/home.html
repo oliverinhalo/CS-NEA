@@ -8,6 +8,9 @@
 {% set weeks = ['Week A', 'Week B'] %}
 <body>
     <h2>Your Timetable</h2>
+    <div class="update-now">
+        <a href="/update">Update Location</a>
+    </div>
     <table>
         <thead>
             <tr>
@@ -20,19 +23,20 @@
                 <th>Teacher</th>
             </tr>
         </thead>
-        <tbody>
-            {% for row in timeTable %}
-            <tr>
-                <td>{{ days[row[0]]}}</td>
-                <td>{{ row[1] }}</td>
-                <td>{{ row[2] }}</td>
-                <td>{{ row[3] }}</td>
-                <td>{{ row[4] }}</td>
-                <td>{{ weeks[row[5]-1] }}</td>
-                <td>{{ row[6] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+            <tbody>
+                {% for row in timeTable %}
+                    {% set is_now = (row[0] == current_day) and (row[5] == current_week) and (row[1] <= current_time <= row[2] if row[2] else '24:00') %}
+                    <tr class="{{ 'highlight' if is_now else '' }}">
+                        <td>{{ days[row[0]] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ weeks[row[5]-1] }}</td>
+                        <td>{{ row[6] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
     </table>
 </body>
 </html>

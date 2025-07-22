@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Timetable</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-update.css') }}">
+</html>
+<body>
+    <div class="container">
+        <h1>Update Your Timetable</h1>
+        <form action="/update" method="post">
+            <label class="label" for="location">Select Location:</label>
+            <select class="dd" id="location" name="location">
+                {% for location in locations %}
+                    <option value="{{ location }}">{{ location }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn" type="submit">Update Location</button>
+        </form>
+    </div>
+</body>
