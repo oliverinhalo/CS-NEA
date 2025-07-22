@@ -8,3 +8,5 @@ INPUT_DATA/periods.json
 INPUT_DATA/Pupil_data.xlsx
 INPUT_DATA/Pupil_Timetable_Data.xlsx
 INPUT_DATA/Set_Timetable_Data.xlsx
+.venv
+__pycache__

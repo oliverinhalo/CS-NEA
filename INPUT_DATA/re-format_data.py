@@ -144,7 +144,8 @@ for pupil in Pupil_data:
 
     last = random.choice(last_names)
     email = f"{first.lower()}.{last.lower()}@school.co.uk"
-    password = hash(pwo.generate())
+    password = pwo.generate()
+    password = hashlib.sha256(password.encode()).hexdigest()
 
     attempts = 0
     while True:
@@ -207,4 +208,18 @@ for pupil in Pupil_data:
     DB_interface.execute_query(
         "INSERT INTO STUDENT_INFO (UserID, Form, House, TimeTableID) VALUES (?,?,?,?)",
         (pupil['Pupil ID'], pupil['Form'], pupil['Boarding House'], TTID)
+        )
+
+data = DB_interface.get_data("SELECT UserID FROM SUBJECTS")
+
+data = [row[0] for row in data]
+
+for teach in set(data):
+    print(teach)
+    f = "FirstName"+str(teach)
+    l = "LastName"+str(teach)
+    se = f+l+"@school-teacher.com"
+    DB_interface.execute_query(
+        "INSERT INTO ACCOUNTS (UserID, RoleID, FirstName, LastName, SchoolEmail, Password, Gender) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (teach,1,f,l,se, "password","M/F")
         )
