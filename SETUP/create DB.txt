@@ -79,3 +79,12 @@ INSERT INTO EVENTS (Type) VALUES (CCF)
 INSERT INTO ROLES (RoleID, RoleName) VALUES (0,"Pupil")
 INSERT INTO ROLES (RoleID, RoleName) VALUES (1,"Teacher")
 INSERT INTO ROLES (RoleID, RoleName) VALUES (2, "Admin")
+
+data = set([i.split(" ")[0] for i in [i[0] for i in DB_interface.get_data("""
+    SELECT LocationName FROM LOCATIONS
+    """)][2:]])
+data = list(set([i if i[0]!="E" else "E" for i in data]))
+for i in data:
+    DB_interface.execute_query("""
+    INSERT INTO LOCATIONS (LocationName) VALUES (?)
+    """, (i,))
