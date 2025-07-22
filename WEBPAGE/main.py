@@ -95,7 +95,6 @@ def get_combined_timetable(user_id):
             teacher
         )
         timetable.append(entry)
-
     return sorted(timetable, key=lambda x: (x[5], x[0], x[1]))
 
 def update_current_location(user_id, location):
@@ -120,14 +119,20 @@ def home():
     d = now.weekday()
     t = now.strftime("%H:%M")
     w = 1 if (now.isocalendar().week % 2) == 1 else 2
+    timeTable=get_combined_timetable(session['user_id'])
+    for i, (day, start, end, subject, location, week, teacher) in enumerate(timeTable):
+        if (day == d) and (week == w) and (start <= t <= end if end else '24:00'):
+            last = i - 1 if i > 0 else None
+            next = i + 1 if i < len(timeTable) - 1 else None
 
     return render_template(
         'home.html',
-        timeTable=get_combined_timetable(session['user_id']),
-        alteration=get_alteration(session['user_id']),
+        timeTable=timeTable,
         current_day=d,
         current_time=t,
-        current_week=w
+        current_week=w,
+        last=last,
+        next=next,
         )
 
 @app.route('/login', methods=['GET', 'POST'])

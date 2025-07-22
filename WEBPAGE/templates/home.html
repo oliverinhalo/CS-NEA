@@ -23,20 +23,58 @@
                 <th>Teacher</th>
             </tr>
         </thead>
-            <tbody>
-                {% for row in timeTable %}
-                    {% set is_now = (row[0] == current_day) and (row[5] == current_week) and (row[1] <= current_time <= row[2] if row[2] else '24:00') %}
-                    <tr class="{{ 'highlight' if is_now else '' }}">
-                        <td>{{ days[row[0]] }}</td>
-                        <td>{{ row[1] }}</td>
-                        <td>{{ row[2] }}</td>
-                        <td>{{ row[3] }}</td>
-                        <td>{{ row[4] }}</td>
-                        <td>{{ weeks[row[5]-1] }}</td>
-                        <td>{{ row[6] }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
+        <tbody>
+            <tr><td colspan="7" class="headder">Last - Now - Next</td></tr>
+            {% set is_now = True %}
+            {% set row = timeTable[last] %}
+            <tr class="{{ 'summary' if is_now else '' }}">
+                <td>{{ days[row[0]] }}</td>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+                <td>{{ row[4] }}</td>
+                <td>{{ weeks[row[5]-1] }}</td>
+                <td>{{ row[6] }}</td>
+            </tr>
+        
+            {% set row = timeTable[next-1] %}
+            <tr class="{{ 'summary' if is_now else '' }}">
+                <td>{{ days[row[0]] }}</td>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+                <td>{{ row[4] }}</td>
+                <td>{{ weeks[row[5]-1] }}</td>
+                <td>{{ row[6] }}</td>
+            </tr>
+
+            {% set row = timeTable[next] %}
+            <tr class="{{ 'summary' if is_now else '' }}">
+                <td>{{ days[row[0]] }}</td>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+                <td>{{ row[4] }}</td>
+                <td>{{ weeks[row[5]-1] }}</td>
+                <td>{{ row[6] }}</td>
+            </tr>
+        </tbody>
+        <tr><td colspan="7" class="gap"></td></tr>
+        <tbody>
+            <tr><td colspan="7" class="headder">Full TimeTable</td></tr>
+            {% for row in timeTable %}
+                {% set is_now = (row[0] == current_day) and (row[5] == current_week) and (row[1] <= current_time <= row[2] if row[2] else '24:00') %}
+                <tr class="{{ 'highlight' if is_now else '' }}">
+                    <td>{{ days[row[0]] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ weeks[row[5]-1] }}</td>
+                    <td>{{ row[6] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
     </table>
 </body>
 </html>

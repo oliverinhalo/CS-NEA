@@ -42,3 +42,13 @@ h2 {
     text-align: center;
     font-weight: bold;
 }
+
+.summary {
+    background-color: rgb(224, 82, 160);
+    font-weight: bold;
+}
+
+.headder {
+    background-color: rgb(82, 224, 160);
+    font-weight: bold;
+}

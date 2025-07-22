@@ -1,0 +1,81 @@
+CREATE TABLE ROLES (
+    RoleID INTEGER PRIMARY KEY,
+    RoleName TEXT
+);
+
+CREATE TABLE SUBJECTS (
+    SubjectID INTEGER PRIMARY KEY,
+    Name TEXT,
+    UserID INTEGER,
+    EventID INTEGER
+);
+
+CREATE TABLE SIGNS (
+    UserID INTEGER,
+    MAC_ID INTEGER,
+    Date TEXT,
+    DeviceID TEXT
+);
+
+CREATE TABLE ACCOUNTS (
+    UserID INTEGER PRIMARY KEY,
+    FirstName TEXT,
+    LastName TEXT,
+    SchoolEmail TEXT,
+    HomeEmail TEXT,
+    Gender TEXT,
+    RoleID INTEGER,
+    Password TEXT,
+    Image TEXT
+);
+
+CREATE TABLE EVENTS (
+    EventID INTEGER PRIMARY KEY,
+    Type TEXT
+);
+
+CREATE TABLE LOCATIONS (
+    LocationID INTEGER PRIMARY KEY,
+    LocationName TEXT
+);
+
+CREATE TABLE STUDENT_INFO (
+    UserID INTEGER,
+    Form TEXT,
+    House TEXT,
+    TimeTableID INTEGER,
+    AlterationID INTEGER,
+    Year INTEGER
+);
+
+CREATE TABLE TIMETABLE (
+    TimeTableID INTEGER,
+    LocationID INTEGER,
+    SubjectID INTEGER,
+    Start TEXT,
+    End TEXT,
+    Day INTEGER,
+    Week INTEGER
+);
+
+CREATE TABLE ALTERATION (
+    UserID INTEGER,
+    LocationID INTEGER,
+    Start TEXT,
+    End TEXT,
+    Day INTEGER,
+    Week INTEGER,
+    Title TEXT,
+    EventID INTEGER
+);
+
+INSERT INTO EVENTS (Type) VALUES (Academic Lesson)
+INSERT INTO EVENTS (Type) VALUES (Music Lesson)
+INSERT INTO EVENTS (Type) VALUES (Current)
+INSERT INTO EVENTS (Type) VALUES (Sport)
+INSERT INTO EVENTS (Type) VALUES (Other)
+INSERT INTO EVENTS (Type) VALUES (CCF)
+
+INSERT INTO ROLES (RoleID, RoleName) VALUES (0,"Pupil")
+INSERT INTO ROLES (RoleID, RoleName) VALUES (1,"Teacher")
+INSERT INTO ROLES (RoleID, RoleName) VALUES (2, "Admin")
