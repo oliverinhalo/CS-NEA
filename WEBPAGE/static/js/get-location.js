@@ -8,19 +8,21 @@ function success(pos) {
     },
     credentials: "include",
     body: JSON.stringify({
-      latitude: cwd.latitude,
-      longitude: cwd.longitude,
+      a: cwd.latitude,
+      o: cwd.longitude,
     }),
-  });
+  })
 }
 
 function error(err) {
   console.warn(`ERROR(${err.code}): ${err.message}`);
 }
 
-
-navigator.geolocation.watchPosition(success, error, {
-  enableHighAccuracy: true,
-  maximumAge: 0,
-  timeout: 10000,
-});
+function getLocation() {
+    navigator.geolocation.watchPosition(success, error, {
+    enableHighAccuracy: true,
+    timeout: 60000,
+    });
+}
+getLocation();
+setTimeout(getLocation, 60000); // 60s

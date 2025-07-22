@@ -206,9 +206,8 @@ zone = {
 @app.route('/check_location', methods=['POST'])
 def check_location():
     data = request.get_json()
-    lat = data.get('latitude')
-    lon = data.get('longitude')
-
+    lat = data.get('a')
+    lon = data.get('o')
     point = Point(lon, lat)
     for location_name, polygon in zone.items():
         if polygon.contains(point):
@@ -232,10 +231,14 @@ def home():
     d = now.weekday()
     t = now.strftime("%H:%M")
     w = 1 if (now.isocalendar().week % 2) == 1 else 2
+
+    last=0
+    next=0
+
     timeTable=get_combined_timetable(session['user_id'])
     for i, (day, start, end, subject, location, week, teacher) in enumerate(timeTable):
         if (day == d) and (week == w) and (start <= t <= end if end else '24:00'):
-            last = i - 1 if i > 0 else None
+            last = i - 1 if i >= 0 else None
             next = i + 1 if i < len(timeTable) - 1 else None
 
     return render_template(
