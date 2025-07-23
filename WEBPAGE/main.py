@@ -232,8 +232,12 @@ def update():
         return redirect(url_for('studentPage'))
     return render_template('update.html', locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")])
 
-@app.route('/studentPage', methods=['GET'])
+@app.route('/studentPage', methods=['GET', 'POST'])
 def studentPage():
+    if request.method == 'POST':
+        location = request.form['location']
+        update_current_location(session['user_id'], location)
+
     now = datetime.now()
     d = now.weekday()
     t = now.strftime("%H:%M")
@@ -256,7 +260,8 @@ def studentPage():
         current_week=w,
         last=last,
         next=next,
-        )
+        locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")]
+    )
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

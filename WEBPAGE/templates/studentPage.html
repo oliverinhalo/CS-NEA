@@ -8,9 +8,20 @@
 {% set weeks = ['Week A', 'Week B'] %}
 <body>
     <h2>Your Timetable</h2>
-    <div class="update-now">
-        <a href="/update">Update Location</a>
+
+    <div class="container">
+        <h1>Update Your Location Manually</h1>
+        <form action="/update" method="post">
+            <label class="label" for="location">Select Location:</label>
+            <select class="dd" id="location" name="location">
+                {% for location in locations %}
+                    <option value="{{ location }}">{{ location }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn" type="submit">Update Location</button>
+        </form>
     </div>
+
     <table>
         <thead>
             <tr>
