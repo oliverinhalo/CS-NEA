@@ -25,4 +25,3 @@ function getLocation() {
     });
 }
 getLocation();
-setTimeout(getLocation, 60000); // 60s

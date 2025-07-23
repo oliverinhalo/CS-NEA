@@ -2,9 +2,10 @@ import socket
 import DB_interface
 import hashlib
 import datetime
-from datetime import datetime
+from datetime import datetime, timedelta
+import secrets
 from shapely.geometry import Point, Polygon
-from flask import Flask, request, render_template, redirect, url_for, session, abort
+from flask import Flask, request, render_template, redirect, url_for, session, make_response
 
 app = Flask(__name__)
 app.secret_key = 'user_id'
@@ -21,7 +22,7 @@ def check_login(Email, password, email_type):
 
 def add_to_remember_me(user_id):
     Mac = request.headers.get('X-Forwarded-For', request.remote_addr)
-    DB_interface.execute_query("INSERT INTO SIGNS (UserID, MAC_ID, Date, DeviceID) VALUES (?, ?, ?, ?)", (user_id, Mac, datetime.now(), "WEBSITE"))
+    DB_interface.execute_query("INSERT INTO SIGNS (UserID, DeviceID, Date, DeviceName) VALUES (?, ?, ?, ?)", (user_id, Mac, datetime.now(), "WEBSITE"))
 
 def get_time_table(user_id):
     timeTableID = DB_interface.get_data("SELECT TimeTableID FROM STUDENT_INFO WHERE UserID = ?", (user_id,))[0][0]
@@ -100,7 +101,13 @@ def get_combined_timetable(user_id):
     return sorted(timetable, key=lambda x: (x[5], x[0], x[1]))
 
 def update_current_location(user_id, location):
-    locationID = DB_interface.get_data("SELECT LocationID FROM LOCATIONS WHERE LocationName = ?", (location,))[0][0]
+    locationID = DB_interface.get_data("SELECT LocationID FROM LOCATIONS WHERE LocationName = ?", (location,))
+
+    if locationID:
+        locationID = locationID[0][0]
+    else:
+        return
+
     now = datetime.now()
     d = now.weekday()
     t = now.strftime("%H:%M")
@@ -214,7 +221,7 @@ def check_location():
             update_current_location(session['user_id'], location_name)
             break
 
-    return '', 204
+    return ''
 
 
 @app.route('/update', methods=['GET', 'POST'])
@@ -222,11 +229,11 @@ def update():
     if request.method == 'POST':
         location = request.form['location']
         update_current_location(session['user_id'], location)
-        return redirect(url_for('home'))
+        return redirect(url_for('studentPage'))
     return render_template('update.html', locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")])
 
-@app.route('/home', methods=['GET'])
-def home():
+@app.route('/studentPage', methods=['GET'])
+def studentPage():
     now = datetime.now()
     d = now.weekday()
     t = now.strftime("%H:%M")
@@ -238,11 +245,11 @@ def home():
     timeTable=get_combined_timetable(session['user_id'])
     for i, (day, start, end, subject, location, week, teacher) in enumerate(timeTable):
         if (day == d) and (week == w) and (start <= t <= end if end else '24:00'):
-            last = i - 1 if i >= 0 else None
-            next = i + 1 if i < len(timeTable) - 1 else None
+            last = i - 1 if i - 1 >= 0 else None
+            next = i + 1 if i + 1 < len(timeTable) else None
 
     return render_template(
-        'home.html',
+        'studentPage.html',
         timeTable=timeTable,
         current_day=d,
         current_time=t,
@@ -253,18 +260,44 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # remove old
+    DB_interface.execute_query(
+    "DELETE FROM REMEMBER_ME WHERE ExpiryDate <= CURRENT_TIMESTAMP"
+    )
+
+
     if request.method == 'POST':
-        email_type = request.form['emailType'] 
+        token = request.cookies.get('remember_token')
+        if token:
+            user = DB_interface.get_data("SELECT UserID FROM REMEMBER_ME WHERE Token = ? AND ExpiryDate > CURRENT_TIMESTAMP", (token,))
+            if user:
+                session['user_id'] = user[0][0]
+                return redirect(url_for('studentPage'))
+
+
+
+        email_type = request.form['emailType']
         remember_me = request.form.get('rememberMe', 'off') == 'on'
-        user_id = check_login(request.form["email"], hashlib.sha256((request.form['password']).encode()).hexdigest(), email_type)
+        enc = hashlib.sha256((request.form['password']).encode()).hexdigest()
+        user_id = check_login(request.form["email"], enc, email_type)
+
         if user_id:
-            if remember_me:
-                add_to_remember_me(user_id)
             session['user_id'] = user_id
-            return redirect(url_for('home'))
+            response = make_response(redirect(url_for('studentPage')))
+
+            if remember_me:
+                token = secrets.token_hex(32)
+                expires = datetime.now() + timedelta(days=30)
+
+                DB_interface.execute_query(
+                    "INSERT INTO REMEMBER_ME (UserID, Token, ExpiryDate) VALUES (?, ?, ?)",
+                    (user_id, token, expires)
+                )
+                response.set_cookie('remember_token', token, max_age=60*60*24*30)
+
+            return response
         else:
             return render_template('login.html', error="Invalid email or password")
-    return render_template('login.html', error=False)
 
 @app.route('/')
 def redirect_to_login():

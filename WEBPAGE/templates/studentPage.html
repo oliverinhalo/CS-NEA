@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Student Timetable</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style-home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-studentPage.css') }}">
 </head>
 {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %}
 {% set weeks = ['Week A', 'Week B'] %}
@@ -25,39 +25,44 @@
         </thead>
         <tbody>
             <tr><td colspan="7" class="headder">Last - Now - Next</td></tr>
-            {% set is_now = True %}
-            {% set row = timeTable[last] %}
-            <tr class="{{ 'summary' if is_now else '' }}">
-                <td>{{ days[row[0]] }}</td>
-                <td>{{ row[1] }}</td>
-                <td>{{ row[2] }}</td>
-                <td>{{ row[3] }}</td>
-                <td>{{ row[4] }}</td>
-                <td>{{ weeks[row[5]-1] }}</td>
-                <td>{{ row[6] }}</td>
-            </tr>
-        
-            {% set row = timeTable[next-1] %}
-            <tr class="{{ 'summary' if is_now else '' }}">
-                <td>{{ days[row[0]] }}</td>
-                <td>{{ row[1] }}</td>
-                <td>{{ row[2] }}</td>
-                <td>{{ row[3] }}</td>
-                <td>{{ row[4] }}</td>
-                <td>{{ weeks[row[5]-1] }}</td>
-                <td>{{ row[6] }}</td>
-            </tr>
+            {% if last is not none %}
+                {% set row = timeTable[last] %}
+                <tr class="summary">
+                    <td>{{ days[row[0]] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ weeks[row[5]-1] }}</td>
+                    <td>{{ row[6] }}</td>
+                </tr>
+            {% endif %}
 
-            {% set row = timeTable[next] %}
-            <tr class="{{ 'summary' if is_now else '' }}">
-                <td>{{ days[row[0]] }}</td>
-                <td>{{ row[1] }}</td>
-                <td>{{ row[2] }}</td>
-                <td>{{ row[3] }}</td>
-                <td>{{ row[4] }}</td>
-                <td>{{ weeks[row[5]-1] }}</td>
-                <td>{{ row[6] }}</td>
-            </tr>
+            {% if next-1 is not none %}
+                {% set row = timeTable[next-1] %}
+                <tr class="summary">
+                    <td>{{ days[row[0]] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ weeks[row[5]-1] }}</td>
+                    <td>{{ row[6] }}</td>
+                </tr>
+            {% endif %}
+
+            {% if next is not none %}
+                {% set row = timeTable[next] %}
+                <tr class="summary">
+                    <td>{{ days[row[0]] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ weeks[row[5]-1] }}</td>
+                    <td>{{ row[6] }}</td>
+                </tr>
+            {% endif %}
         </tbody>
         <tr><td colspan="7" class="gap"></td></tr>
         <tbody>
