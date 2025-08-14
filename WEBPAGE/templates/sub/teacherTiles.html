@@ -7,15 +7,59 @@
 </head>
 <body>
     <form method="get">
-        <input type="SearchName" class="SearchName" id="SearchName" name="SearchName" placeholder="Search Name">
+        <input type="text" class="SearchName" id="SearchName" name="SearchName" placeholder="Search Name">
 
-        <select name="limit" id="limit" class="limit" onchange="this.form.submit()">
-            <option value="20" {% if request.args.get("limit") == "20" %} selected {% endif %} >Show 20</option>
-            <option value="50" {% if request.args.get("limit") == "50" %} selected {% endif %} >Show 50</option>
-            <option value="100" {% if request.args.get("limit") == "100" %} selected {% endif %} >Show 100</option>
-            <option value="1000" {% if request.args.get("limit") == "1000" %} selected {% endif %} >Show All</option>
+        <div class="dropdown-checkbox" id="houseDropdown">
+            <div class="dropdown-btn">Select Houses ▾</div>
+            <div class="dropdown-content">
+                <label>
+                    <input type="checkbox" class="select-all" data-group="house" 
+                        {% if not request.args.getlist("house") %}checked{% endif %}>
+                    <strong>All</strong>
+                </label>
+                {% set current_houses = request.args.getlist("house") %}
+                {% for h in ["House 1", "House 2", "House 3", "House 4", "House 5", "House 6", "House 7"] %}
+                    <label>
+                        <input type="checkbox" name="house" value="{{ h }}"
+                            {% if h in current_houses %}checked{% endif %} 
+                            class="item-checkbox" data-group="house">
+                        {{ h }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="dropdown-checkbox" id="formDropdown">
+            <div class="dropdown-btn">Select Form ▾</div>
+            <div class="dropdown-content">
+                <label>
+                    <input type="checkbox" class="select-all" data-group="form" 
+                        {% if not request.args.getlist("form") %}checked{% endif %}>
+                    <strong>All</strong>
+                </label>
+                {% set current_forms = request.args.getlist("form") %}
+                {% for f in ["Form A", "Form B", "Form C", "Form D", "Form E", "Form F", "Form G"] %}
+                    <label>
+                        <input type="checkbox" name="form" value="{{ f }}"
+                            {% if f in current_forms %}checked{% endif %} 
+                            class="item-checkbox" data-group="form">
+                        {{ f }}
+                    </label>
+                {% endfor %}
+            </div>
+            <script src="{{ url_for('static', filename='js/dropdown.js') }}"></script>
+        </div>
+
+        <select name="limit" id="limit" class="dropdown" onchange="this.form.submit()">
+            {% set current_limit = request.args.get("limit", "50") %}
+            <option value="20" {{ "selected" if current_limit == "20" else "" }}>Show 20</option>
+            <option value="50" {{ "selected" if current_limit == "50" else "" }}>Show 50</option>
+            <option value="100" {{ "selected" if current_limit == "100" else "" }}>Show 100</option>
+            <option value="1000" {{ "selected" if current_limit == "1000" else "" }}>Show All</option>
         </select>
+
     </form>
+
 
     <div class="cards">
         {% if not people %}

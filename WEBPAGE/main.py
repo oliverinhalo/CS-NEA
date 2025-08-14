@@ -246,21 +246,47 @@ def update():
 def teacher_tiles():
     limit = request.args.get("limit", "50")
     search_name = request.args.get("SearchName", "")
+    houses = request.args.getlist("house")
+    forms = request.args.getlist("form")
 
-    people = [[dir.replace("\\","/"),f,l] for dir,f,l in DB_interface.get_data("""
+    sql = """
         SELECT
-            Image,
-            FirstName,
-            LastName
+            ACCOUNTS.Image,
+            ACCOUNTS.FirstName,
+            ACCOUNTS.LastName,
+            STUDENT_INFO.House,
+            STUDENT_INFO.Form
         FROM
             ACCOUNTS
+        JOIN
+            STUDENT_INFO ON ACCOUNTS.UserID = STUDENT_INFO.UserID
         WHERE
             RoleID = 0
             AND (FirstName LIKE ? OR LastName LIKE ?)
-        LIMIT ?
-        """, (f"%{search_name}%", f"%{search_name}%", limit))]
+    """
+
+    params = [f"%{search_name}%", f"%{search_name}%"]
+
+    if houses:
+        placeholders = ','.join(['?'] * len(houses))
+        sql += f" AND STUDENT_INFO.House IN ({placeholders})"
+        params.extend(houses) # adds each item in list into list
+    if forms:
+        placeholders = ','.join(['?'] * len(forms))
+        sql += f" AND STUDENT_INFO.Form IN ({placeholders})"
+        params.extend(forms)
+
+    sql += " ORDER BY LastName, FirstName LIMIT ?"
+    params.append(limit)
+
+    #DB and dealing with results
+    people = [
+        [dir.replace("\\", "/"), a, b, c, d]
+        for dir, a, b, c, d in DB_interface.get_data(sql, tuple(params))
+    ]
 
     return render_template('sub/teacherTiles.html', people=people)
+
 
 
 @app.route('/adminPage', methods=['GET', 'POST'])

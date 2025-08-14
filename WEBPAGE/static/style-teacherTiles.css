@@ -24,7 +24,7 @@ body {
 }
 
 .card:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
     transition: transform 1s;
 }
 
@@ -39,4 +39,36 @@ body {
     height: 110px;
     border-radius: 15px;
     border: 2px solid Black;
+}
+
+.dropdown-checkbox {
+    width: 150px;
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-checkbox .dropdown-btn {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background: white;
+}
+
+.dropdown-checkbox .dropdown-content {
+    display: none;
+    width: 150px;
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+}
+
+.dropdown-checkbox.active .dropdown-content {
+    display: block;
+}
+
+.dropdown-checkbox label {
+    display: block;
+    cursor: pointer;
+    margin-bottom: 3px;
+    font-size: 14px;
 }
