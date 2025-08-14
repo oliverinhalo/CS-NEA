@@ -43,8 +43,18 @@ h2 {
     font-weight: bold;
 }
 
-.summary {
-    background-color: rgb(224, 82, 160);
+.summary-last {
+    background-color: rgb(189, 56, 26);
+    font-weight: bold;
+}
+
+.summary-now {
+    background-color: lightgreen;
+    font-weight: bold;
+}
+
+.summary-next {
+    background-color: rgb(140, 235, 16);
     font-weight: bold;
 }
 

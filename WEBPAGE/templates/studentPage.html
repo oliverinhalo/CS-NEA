@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Student Timetable</title>
+    <title>Student</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style-studentPage.css') }}">
 </head>
 {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %}
@@ -38,7 +38,7 @@
             <tr><td colspan="7" class="headder">Last - Now - Next</td></tr>
             {% if last is not none %}
                 {% set row = timeTable[last] %}
-                <tr class="summary">
+                <tr class="summary-last">
                     <td>{{ days[row[0]] }}</td>
                     <td>{{ row[1] }}</td>
                     <td>{{ row[2] }}</td>
@@ -49,9 +49,9 @@
                 </tr>
             {% endif %}
 
-            {% if next-1 is not none %}
-                {% set row = timeTable[next-1] %}
-                <tr class="summary">
+            {% if last is not none %}
+                {% set row = timeTable[last+1] %}
+                <tr class="summary-now">
                     <td>{{ days[row[0]] }}</td>
                     <td>{{ row[1] }}</td>
                     <td>{{ row[2] }}</td>
@@ -64,7 +64,7 @@
 
             {% if next is not none %}
                 {% set row = timeTable[next] %}
-                <tr class="summary">
+                <tr class="summary-next">
                     <td>{{ days[row[0]] }}</td>
                     <td>{{ row[1] }}</td>
                     <td>{{ row[2] }}</td>

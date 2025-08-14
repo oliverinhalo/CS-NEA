@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-teacherPage.css') }}">
+    <title>Teacher</title>
+</head>
+<body>
+    <h2>All Pupils</h2>
+    <iframe src="{{ url_for('teacher_tiles') }}"></iframe>
+</body>
+</html>

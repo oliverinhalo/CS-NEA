@@ -10,3 +10,5 @@ INPUT_DATA/Pupil_Timetable_Data.xlsx
 INPUT_DATA/Set_Timetable_Data.xlsx
 .venv
 __pycache__
+WEBPAGE/__pycache__
+WEBPAGE/static/img

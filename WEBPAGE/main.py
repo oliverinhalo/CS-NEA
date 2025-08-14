@@ -1,6 +1,6 @@
 import socket
 import DB_interface
-import hashlib
+from enc import hash_password as encrypt
 import datetime
 from datetime import datetime, timedelta
 import secrets
@@ -13,6 +13,7 @@ app.secret_key = 'user_id'
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     s.connect(("8.8.8.8", 80))
     my_ip=s.getsockname()[0]
+
 
 
 def check_login(Email, password, email_type):
@@ -114,6 +115,13 @@ def update_current_location(user_id, location):
     w = 1 if (now.isocalendar().week % 2) == 1 else 2
     DB_interface.execute_query("UPDATE ALTERATION SET LocationID = ?, Start = ?, Day = ?, Week = ? WHERE UserID = ? AND EventID = 1", (locationID, t, d, w, user_id))
 
+def account_type(user_id):
+    account_type = DB_interface.get_data("SELECT RoleID FROM ACCOUNTS WHERE UserID = ?", (user_id,))
+    if account_type:
+        return account_type[0][0]
+    return None
+
+
 
 zone = {
     "Home": Polygon([
@@ -210,6 +218,7 @@ zone = {
     ])
 }
 
+#web functions
 @app.route('/check_location', methods=['POST'])
 def check_location():
     data = request.get_json()
@@ -232,8 +241,46 @@ def update():
         return redirect(url_for('studentPage'))
     return render_template('update.html', locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")])
 
+#pages
+@app.route('/sub/teacherTiles', methods=['GET'])
+def teacher_tiles():
+    limit = request.args.get("limit", "50")
+    search_name = request.args.get("SearchName", "")
+
+    people = [[dir.replace("\\","/"),f,l] for dir,f,l in DB_interface.get_data("""
+        SELECT
+            Image,
+            FirstName,
+            LastName
+        FROM
+            ACCOUNTS
+        WHERE
+            RoleID = 0
+            AND (FirstName LIKE ? OR LastName LIKE ?)
+        LIMIT ?
+        """, (f"%{search_name}%", f"%{search_name}%", limit))]
+
+    return render_template('sub/teacherTiles.html', people=people)
+
+
+@app.route('/adminPage', methods=['GET', 'POST'])
+def adminPage():
+    return render_template('adminPage.html')
+
+
+@app.route('/teacherPage', methods=['GET', 'POST'])
+def TeacherPage():
+    if account_type(session['user_id']) == 2:
+        return redirect(url_for('adminPage'))
+    
+    return render_template('teacherPage.html')
+
+
 @app.route('/studentPage', methods=['GET', 'POST'])
 def studentPage():
+    if account_type(session['user_id']) != 0:
+        return redirect(url_for('TeacherPage'))
+
     if request.method == 'POST':
         location = request.form['location']
         update_current_location(session['user_id'], location)
@@ -263,6 +310,7 @@ def studentPage():
         locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")]
     )
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # remove old
@@ -283,7 +331,7 @@ def login():
 
         email_type = request.form['emailType']
         remember_me = request.form.get('rememberMe', 'off') == 'on'
-        enc = hashlib.sha256((request.form['password']).encode()).hexdigest()
+        enc = encrypt(request.form['password'])
         user_id = check_login(request.form["email"], enc, email_type)
 
         if user_id:
@@ -303,15 +351,20 @@ def login():
             return response
         else:
             return render_template('login.html', error="Invalid email or password")
+    return render_template('login.html')
+
 
 @app.route('/')
 def redirect_to_login():
     return redirect("/login")
 
+
 @app.errorhandler(404)
 def not_found(e):
     return render_template("404.html")
 
+
+#start the app
 if __name__ == '__main__':
     #app.run(host=my_ip, port=5000, debug=True, threaded=True)
-    app.run(host='localhost', port=5000, debug=True, threaded=True)
+    app.run(host='localhost', port=8000, debug=True, threaded=True)
