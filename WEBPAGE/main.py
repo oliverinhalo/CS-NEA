@@ -244,6 +244,11 @@ def update():
 #pages
 @app.route('/sub/teacherTiles', methods=['GET'])
 def teacher_tiles():
+    now = datetime.now()
+    d = now.weekday()
+    t = now.strftime("%H:%M")
+    w = 1 if (now.isocalendar().week % 2) == 1 else 2
+
     limit = request.args.get("limit", "50")
     search_name = request.args.get("SearchName", "")
     houses = request.args.getlist("house")
@@ -255,17 +260,26 @@ def teacher_tiles():
             ACCOUNTS.FirstName,
             ACCOUNTS.LastName,
             STUDENT_INFO.House,
-            STUDENT_INFO.Form
+            STUDENT_INFO.Form,
+            SUBJECTS.Name
         FROM
             ACCOUNTS
         JOIN
             STUDENT_INFO ON ACCOUNTS.UserID = STUDENT_INFO.UserID
+        JOIN
+            TIMETABLE ON STUDENT_INFO.TimeTableID = TIMETABLE.TimeTableID
+        JOIN
+            SUBJECTS ON TIMETABLE.SubjectID = SUBJECTS.SubjectID
         WHERE
-            RoleID = 0
+            (TIMETABLE.Start < ?
+            AND TIMETABLE.End > ?
+            AND TIMETABLE.Day = ?
+            AND TIMETABLE.Week = ?)
+            AND RoleID = 0
             AND (FirstName LIKE ? OR LastName LIKE ?)
     """
-
-    params = [f"%{search_name}%", f"%{search_name}%"]
+    t = "14:50"
+    params = [t, t, d, w, f"%{search_name}%", f"%{search_name}%"]
 
     if houses:
         placeholders = ','.join(['?'] * len(houses))
@@ -281,8 +295,8 @@ def teacher_tiles():
 
     #DB and dealing with results
     people = [
-        [dir.replace("\\", "/"), a, b, c, d]
-        for dir, a, b, c, d in DB_interface.get_data(sql, tuple(params))
+        [dir.replace("\\", "/"), a, b, c, d, e]
+        for dir, a, b, c, d, e in DB_interface.get_data(sql, tuple(params))
     ]
 
     return render_template('sub/teacherTiles.html', people=people)

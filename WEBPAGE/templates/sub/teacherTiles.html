@@ -60,17 +60,44 @@
 
     </form>
 
+    {% set house_colors = ["#FF6F61", "#6B5B95", "#88B04B", "#F7CAC9", "#92A8D1", "#FFB347", "#009688"] %}
+    {% set form_map = {"A":1, "B":2, "C":3, "D":4, "E":5, "F":6, "G":7} %}
+    {% set form_colors = ["#e57373", "#64b5f6", "#81c784", "#ffb74d", "#ba68c8", "#4db6ac", "#ffd54f"] %}
 
     <div class="cards">
         {% if not people %}
             <p>No results found.</p>
         {% else %}
             {% for person in people %}
-            <div class="card">
+            <div class="card" style="background-color: {{ house_colors[(person[3].replace('House ', '')|int) - 1] }};">
                 {% set image_file = person[0] if person[0] else 'None.png' %}
-                <img class="img" src="{{ url_for('static', filename='img/' + image_file) }}" alt="Image">
+                <img class="img" src="{{ url_for('static', filename='img/' + image_file) }}" alt="Image" style="border: 5px solid {{ form_colors[form_map[person[4].replace('Form ', '')] - 1] }};">
                 <div class="card-text">
-                    <h2>{{ person[1] }} {{ person[2] }}</h2>
+                    <h2>{{ person[1] }}-{{ person[2][0:3] }}</h2>
+                    <p>{{ person[3].replace(" ", ": ") }}</p>
+                    <p>{{ person[4].replace(" ", ": ") }}</p>
+                </div>
+                <div class="lesson">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Should</th>
+                                <th>Actual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="items">
+                                {% if person[5] == "Mathematics" %}
+                                    {% set person_5 = "Maths" %}
+                                {% else %}
+                                    {% set person_5 = person[5] %}
+                                {% endif %}
+
+                                <td>{{ person_5 }}</td>
+                                <td>{{ person_5 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             {% endfor %}
