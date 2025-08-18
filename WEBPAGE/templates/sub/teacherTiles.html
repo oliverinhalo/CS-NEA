@@ -81,20 +81,15 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Should</th>
+                                <th>Expected</th>
                                 <th>Actual</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr class="items">
-                                {% if person[5] == "Mathematics" %}
-                                    {% set person_5 = "Maths" %}
-                                {% else %}
-                                    {% set person_5 = person[5] %}
-                                {% endif %}
-
-                                <td>{{ person_5 }}</td>
-                                <td>{{ person_5 }}</td>
+                                {% set display_value = person[5][:4] if person[5]|length > 10 else person[5] %}
+                                <td>{{ display_value }}</td>
+                                <td>{{ display_value }}</td>
                             </tr>
                         </tbody>
                     </table>

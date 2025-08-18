@@ -296,13 +296,14 @@ def teacher_tiles():
         JOIN
             SUBJECTS ON TIMETABLE.SubjectID = SUBJECTS.SubjectID
         WHERE
-            (TIMETABLE.Start < ?
-            AND TIMETABLE.End > ?
+            (TIMETABLE.Start <= ?
+            AND TIMETABLE.End >= ?
             AND TIMETABLE.Day = ?
             AND TIMETABLE.Week = ?)
             AND RoleID = 0
             AND (FirstName LIKE ? OR LastName LIKE ?)
     """
+    t="08:35"
     params = [t, t, d, w, f"%{search_name}%", f"%{search_name}%"]
 
     if houses:
