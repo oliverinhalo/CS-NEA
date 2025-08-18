@@ -121,7 +121,13 @@ def account_type(user_id):
         return account_type[0][0]
     return None
 
-
+def update_password(user_id, current_password, new_password):
+    if not DB_interface.get_data("SELECT UserID FROM ACCOUNTS WHERE UserID = ? AND Password = ?", (user_id, current_password)):
+        return False
+    DB_interface.execute_query("""
+        UPDATE ACCOUNTS SET Password = ? WHERE UserID = ? AND Password = ?
+    """, (new_password, user_id, current_password))
+    return True
 
 zone = {
     "Home": Polygon([
@@ -241,6 +247,25 @@ def update():
         return redirect(url_for('studentPage'))
     return render_template('update.html', locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")])
 
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if request.method == 'POST':
+        current_password = encrypt(request.form['current_password'])
+        new_password = encrypt(request.form['new_password'])
+        confirm_password = encrypt(request.form['confirm_password'])
+
+        if new_password == confirm_password:
+            if update_password(session['user_id'], current_password, new_password):
+                print("Password updated successfully")
+                return redirect(url_for('studentPage'))
+            else:
+                print("Password update failed")
+                return redirect(url_for('change_password'))
+
+    return redirect(url_for('studentPage'))
+
+
+
 #pages
 @app.route('/sub/teacherTiles', methods=['GET'])
 def teacher_tiles():
@@ -278,7 +303,6 @@ def teacher_tiles():
             AND RoleID = 0
             AND (FirstName LIKE ? OR LastName LIKE ?)
     """
-    t = "14:50"
     params = [t, t, d, w, f"%{search_name}%", f"%{search_name}%"]
 
     if houses:

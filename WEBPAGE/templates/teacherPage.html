@@ -6,7 +6,36 @@
     <title>Teacher</title>
 </head>
 <body>
-    <h2>All Pupils</h2>
+    <h2>Teacher Page</h2>
+    <button class="settings-btn" onclick="Panel()">Settings ⚙️</button>
+    <div id="sidePanel" class="side-panel">
+        <a href="">Logout</a>
+        <a onclick="showChangePassword()">Change Password</a>
+        <a href="">Change Image</a>
+        <a href="">Add/Change Home Email</a>
+    </div>
+
+    <div id="changePasswordForm" class="change-password">
+        <button class="close-modal" onclick="hideChangePassword()">×</button>
+        <h3>Change Password</h3>
+        <form method="post" action="{{ url_for('change_password') }}">
+            <label for="current_password">Current Password:</label>
+            <input type="password" id="current_password" name="current_password" required>
+
+            <label for="new_password">New Password:</label>
+            <input type="password" id="new_password" name="new_password" required>
+
+            <label for="confirm_password">Confirm New Password:</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+
+            <input type="submit" value="Change Password">
+        </form>
+    </div>
+
+
     <iframe src="{{ url_for('teacher_tiles') }}"></iframe>
+
+    <script src="{{ url_for('static', filename='js/side-bar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Change-Password.js') }}"></script>
 </body>
 </html>
