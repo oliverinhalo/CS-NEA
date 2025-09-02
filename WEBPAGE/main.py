@@ -383,7 +383,7 @@ def login():
     "DELETE FROM REMEMBER_ME WHERE ExpiryDate <= CURRENT_TIMESTAMP"
     )
 
-
+    # check for cookie token
     if request.method == 'POST':
         token = request.cookies.get('remember_token')
         if token:
@@ -393,7 +393,7 @@ def login():
                 return redirect(url_for('studentPage'))
 
 
-
+        # get credentials and Remember Me button
         email_type = request.form['emailType']
         remember_me = request.form.get('rememberMe', 'off') == 'on'
         enc = encrypt(request.form['password'])
