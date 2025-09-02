@@ -32,10 +32,14 @@
         </form>
     </div>
 
+    <button id="tileViewBtn" onclick="TileView()" style="background-color: rgba(103, 209, 61, 0.94)">Tile View</button>
+    <button id="listViewBtn" onclick="ListView()" style="background-color: rgba(254, 255, 195, 1)">List View</button>
+    <iframe id="teacher_tiles" src="{{ url_for('teacher_tiles') }}"></iframe>
+    <iframe id="teacher_list" src="{{ url_for('teacher_list') }}" style="display: none;"></iframe>
 
-    <iframe src="{{ url_for('teacher_tiles') }}"></iframe>
 
     <script src="{{ url_for('static', filename='js/side-bar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/Change-Password.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/TeacherPage-scr.js') }}"></script>
 </body>
 </html>

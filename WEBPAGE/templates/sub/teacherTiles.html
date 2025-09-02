@@ -70,8 +70,8 @@
         {% else %}
             {% for person in people %}
             <div class="card" style="background-color: {{ house_colors[(person[3].replace('House ', '')|int) - 1] }};">
-                {% set image_file = person[0] if person[0] else 'None.png' %}
-                <img class="img" src="{{ url_for('static', filename='img/' + image_file) }}" alt="Image" style="border: 5px solid {{ form_colors[form_map[person[4].replace('Form ', '')] - 1] }};">
+                {% set image_file = person[0].replace("\\", "/") if person[0] else 'None.png' %}
+                <img class="img" src="{{ url_for('static', filename='img/' + image_file) }}" alt="Profile Picture" style="border: 5px solid {{ form_colors[form_map[person[4].replace('Form ', '')] - 1] }};">
                 <div class="card-text">
                     <h2>{{ person[1] }}-{{ person[2][0:3] }}</h2>
                     <p>{{ person[3].replace(" ", ": ") }}</p>

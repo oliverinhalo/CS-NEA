@@ -267,6 +267,11 @@ def change_password():
 
 
 #pages
+@app.route('/sub/teacherList', methods=['GET'])
+def teacher_list():
+    return render_template('sub/teacherList.html')
+
+
 @app.route('/sub/teacherTiles', methods=['GET'])
 def teacher_tiles():
     now = datetime.now()
@@ -303,7 +308,7 @@ def teacher_tiles():
             AND RoleID = 0
             AND (FirstName LIKE ? OR LastName LIKE ?)
     """
-    t="08:35"
+    #t="08:35"
     params = [t, t, d, w, f"%{search_name}%", f"%{search_name}%"]
 
     if houses:
@@ -319,10 +324,8 @@ def teacher_tiles():
     params.append(limit)
 
     #DB and dealing with results
-    people = [
-        [dir.replace("\\", "/"), a, b, c, d, e]
-        for dir, a, b, c, d, e in DB_interface.get_data(sql, tuple(params))
-    ]
+    people = DB_interface.get_data(sql, tuple(params))
+
 
     return render_template('sub/teacherTiles.html', people=people)
 
