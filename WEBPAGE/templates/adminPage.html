@@ -1,0 +1,27 @@
+<html>
+<head>
+    <title>Admin Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-adminPage.css') }}">
+    <script>
+        function setPage(pageName) {
+            document.getElementById('admin-iframe').src = "{{ url_for('page') }}?page=" + pageName;
+        }
+        window.onload = function() {
+            // def page
+            setPage("sub/adminAddAccount");
+        };
+    </script>
+</head>
+<body>
+    <h1>Welcome to the Admin Page</h1>
+    <div>
+        <a href="#" onclick="setPage('sub/adminAddAccount')">Add Account</a>
+        <a href="#" onclick="setPage('sub/adminRemoveAccount')">Remove Account</a>
+        <a href="#" onclick="setPage('sub/adminViewAccounts')">View Accounts</a>
+        <a href="#" onclick="setPage('sub/adminSQLQuery')">SQL Query</a>
+    </div>
+    <div>
+        <iframe id="admin-iframe" class="admin-iframe"></iframe>
+    </div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+a {
+    text-decoration: none;
+    color: #007bff;
+    font-size: 150%;
+    margin: 10px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.admin-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}

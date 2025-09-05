@@ -5,7 +5,9 @@ import datetime
 from datetime import datetime, timedelta
 import secrets
 from shapely.geometry import Point, Polygon
-from flask import Flask, request, render_template, redirect, url_for, session, make_response
+from fileinput import filename
+from PIL import Image
+from flask import Flask, flash, request, render_template, redirect, url_for, session, make_response
 
 app = Flask(__name__)
 app.secret_key = 'user_id'
@@ -238,7 +240,6 @@ def check_location():
 
     return ''
 
-
 @app.route('/update', methods=['GET', 'POST'])
 def update():
     if request.method == 'POST':
@@ -264,9 +265,50 @@ def change_password():
 
     return redirect(url_for('studentPage'))
 
+@app.route('/add_account', methods=['GET', 'POST'])
+def add_account():
+    response=False
+    if request.method == 'POST':
+        first_name = request.form['firstName']
+        last_name = request.form['lastName']
+        gender = request.form['gender']
+        email = request.form['email']
+        role = request.form['role']
+        img = request.files['imageUpload']
+        f_name=encrypt(email) + ".png"
+        img.save("WEBPAGE/static/img/faces/" + f_name)
+
+        image = Image.open("WEBPAGE/static/img/faces/" + f_name)
+        image = image.convert("RGB")
+        image = image.crop((0, 0, min(image.size), min(image.size)))
+        image = image.resize((150, 150))
+        image = image.rotate(-90, expand=True)
+        image.save("WEBPAGE/static/img/faces/" + f_name, "PNG")
+
+        response = DB_interface.execute_query(
+            "INSERT INTO ACCOUNTS (FirstName, LastName, Gender, SchoolEmail, RoleID, Image) VALUES (?, ?, ?, ?, ?, ?)",
+            (first_name, last_name, gender, email, role, f"faces\\{f_name}")
+        )
+    if not response:
+        print("Account Failed to add successfully!")
+        flash("Account Failed to add successfully!", "error")
+        return redirect(url_for('adminAddAccount'))
+    else:
+        flash("Account added successfully!", "success")
+        return redirect(url_for('adminAddAccount'))
 
 
 #pages
+@app.route("/page")
+def page():
+    requested_page = request.args.get("page")
+    return render_template(f"{requested_page}.html")
+
+@app.route('/sub/adminAddAccount', methods=['GET', 'POST'])
+def adminAddAccount():
+    return render_template('sub/adminAddAccount.html')
+
+
 @app.route('/sub/teacherList', methods=['GET'])
 def teacher_list():
     return render_template('sub/teacherList.html')
@@ -328,7 +370,6 @@ def teacher_tiles():
 
 
     return render_template('sub/teacherTiles.html', people=people)
-
 
 
 @app.route('/adminPage', methods=['GET', 'POST'])

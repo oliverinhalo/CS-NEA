@@ -10,3 +10,4 @@ datetime
 secrets
 shapely
 gunicorn
+pillow

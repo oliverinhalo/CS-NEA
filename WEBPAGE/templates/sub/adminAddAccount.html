@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-adminAddAccount.css') }}">
+    <title>Add Account</title>
+</head>
+<body>
+    <form action="/add_account" method="post" enctype="multipart/form-data">
+        <label for="firstName">First Name:</label>
+        <input type="text" id="firstName" name="firstName" required>
+        <br>
+        <label for="lastName">Last Name:</label>
+        <input type="text" id="lastName" name="lastName" required>
+        <br>
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+            <option value="m">Male</option>
+            <option value="f">Female</option>
+        </select>
+        <br>
+        <label for="email">School Email:</label>
+        <input type="email" id="email" name="email" required>
+        <input type="button" onclick="document.getElementById('email').value += '@school.co.uk';" value="Add Domain">
+        <br>
+        <label for="imageUpload">Upload Profile Picture:</label>
+        <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
+        <br>
+        <label for="role">Role:</label>
+        <select id="role" name="role" required>
+            <option value="0">Student</option>
+            <option value="1">Teacher</option>
+            <option value="2">Admin</option>
+        </select>
+        <br>
+        <input type="submit" value="Add Account">
+    </form>
+</body>
+</html>
