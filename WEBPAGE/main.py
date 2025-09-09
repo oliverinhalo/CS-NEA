@@ -7,10 +7,28 @@ import secrets
 from shapely.geometry import Point, Polygon
 from fileinput import filename
 from PIL import Image
+import logging
 from flask import Flask, flash, request, render_template, redirect, url_for, session, make_response
+
+logger = logging.getLogger('my_logger')
+logger.setLevel(logging.INFO)
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+f = logging.FileHandler('app.log')
+c = logging.StreamHandler()
+f.setLevel(logging.INFO)
+f.setFormatter(formatter)
+c.setLevel(logging.INFO)
+c.setFormatter(formatter)
+
+logger.addHandler(f)
+logger.addHandler(c)
+
 
 app = Flask(__name__)
 app.secret_key = 'user_id'
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     s.connect(("8.8.8.8", 80))
@@ -302,6 +320,7 @@ def add_account():
 @app.route("/page")
 def page():
     requested_page = request.args.get("page")
+    logging.debug(f"Requested page: {requested_page}")
     return render_template(f"{requested_page}.html")
 
 @app.route('/sub/adminAddAccount', methods=['GET', 'POST'])
@@ -470,10 +489,13 @@ def redirect_to_login():
 
 @app.errorhandler(404)
 def not_found(e):
+    logging.warning(f"404 error: {e}")
     return render_template("404.html")
 
 
 #start the app
 if __name__ == '__main__':
+    #logging.info(f"Starting app on http://{my_ip}:5000")
     #app.run(host=my_ip, port=5000, debug=True, threaded=True)
+    logging.info(f"Starting app on http://localhost:8000")
     app.run(host='localhost', port=8000, debug=True, threaded=True)
