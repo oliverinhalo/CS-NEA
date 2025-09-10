@@ -12,3 +12,4 @@ INPUT_DATA/Set_Timetable_Data.xlsx
 __pycache__
 WEBPAGE/__pycache__
 WEBPAGE/static/img
+.env

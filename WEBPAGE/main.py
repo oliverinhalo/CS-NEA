@@ -8,6 +8,10 @@ from shapely.geometry import Point, Polygon
 from fileinput import filename
 from PIL import Image
 import logging
+import smtplib
+import random
+import os
+from dotenv import load_dotenv
 from flask import Flask, flash, request, render_template, redirect, url_for, session, make_response
 
 logger = logging.getLogger('my_logger')
@@ -34,6 +38,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     s.connect(("8.8.8.8", 80))
     my_ip=s.getsockname()[0]
 
+mfa_codes = {}
+
+
+load_dotenv()
 
 
 def check_login(Email, password, email_type):
@@ -148,6 +156,7 @@ def update_password(user_id, current_password, new_password):
         UPDATE ACCOUNTS SET Password = ? WHERE UserID = ? AND Password = ?
     """, (new_password, user_id, current_password))
     return True
+
 
 zone = {
     "Home": Polygon([
@@ -323,6 +332,7 @@ def page():
     logging.debug(f"Requested page: {requested_page}")
     return render_template(f"{requested_page}.html")
 
+
 @app.route('/sub/adminAddAccount', methods=['GET', 'POST'])
 def adminAddAccount():
     return render_template('sub/adminAddAccount.html')
@@ -439,6 +449,38 @@ def studentPage():
     )
 
 
+def send_email_code(to_email, code):
+    to_email=os.environ.get('email') # for testing
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(os.environ.get('email'), os.environ.get('app_password'))
+            message = f"Subject: Your MFA Code\n\nYour verification code is: {code}"
+            server.sendmail(os.environ.get('email'), to_email, message)
+    except Exception as e:
+        print(f"Email send error: {e}")
+
+
+@app.route('/multi_factor_auth', methods=['GET', 'POST'])
+def mfa():
+    if request.method == 'POST':
+        code = request.form['code']
+        user_id = session.get('pending_user')
+        if user_id and mfa_codes.get(user_id) == code:
+            mfa_codes.pop(user_id, None)
+            session.pop('pending_user', None)
+            return redirect(url_for('studentPage'))
+        else:
+            return render_template('multi_factor_auth.html', 
+                                   email=session.get('pending_email'), 
+                                   emailType=session.get('pending_emailType'),
+                                   error="Invalid code")
+    
+    return render_template('multi_factor_auth.html', 
+                           email=session.get('pending_email'), 
+                           emailType=session.get('pending_emailType'))
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # remove old
@@ -457,10 +499,11 @@ def login():
 
 
         # get credentials and Remember Me button
-        email_type = request.form['emailType']
+        emailType = request.form['emailType']
+        email = request.form["email"]
         remember_me = request.form.get('rememberMe', 'off') == 'on'
         enc = encrypt(request.form['password'])
-        user_id = check_login(request.form["email"], enc, email_type)
+        user_id = check_login(email, enc, emailType)
 
         if user_id:
             session['user_id'] = user_id
@@ -476,7 +519,20 @@ def login():
                 )
                 response.set_cookie('remember_token', token, max_age=60*60*24*30)
 
-            return response
+            session['pending_user'] = user_id
+            session['pending_email'] = email
+            session['pending_emailType'] = emailType
+
+            # ✅ generate MFA code + send
+            code = str(random.randint(100000, 999999))
+            mfa_codes[user_id] = code
+            send_email_code(email, code)
+
+            # pass remember-me response until after MFA success
+            resp = make_response(redirect(url_for('mfa')))
+
+
+            return resp
         else:
             return render_template('login.html', error="Invalid email or password")
     return render_template('login.html')

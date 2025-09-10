@@ -11,3 +11,4 @@ secrets
 shapely
 gunicorn
 pillow
+dotenv
