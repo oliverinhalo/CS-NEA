@@ -38,8 +38,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     s.connect(("8.8.8.8", 80))
     my_ip=s.getsockname()[0]
 
-mfa_codes = {}
-
 
 load_dotenv()
 
@@ -48,10 +46,6 @@ def check_login(Email, password, email_type):
     email_type = "SchoolEmail" if email_type == "school" else "HomeEmail"
     user_id = DB_interface.get_data(f"SELECT UserID FROM ACCOUNTS WHERE {email_type} = ? AND Password = ?", (Email, password))
     return user_id[0][0] if user_id else None
-
-def add_to_remember_me(user_id):
-    Mac = request.headers.get('X-Forwarded-For', request.remote_addr)
-    DB_interface.execute_query("INSERT INTO SIGNS (UserID, DeviceID, Date, DeviceName) VALUES (?, ?, ?, ?)", (user_id, Mac, datetime.now(), "WEBSITE"))
 
 def get_time_table(user_id):
     timeTableID = DB_interface.get_data("SELECT TimeTableID FROM STUDENT_INFO WHERE UserID = ?", (user_id,))[0][0]
@@ -101,9 +95,9 @@ def get_alteration(user_id):
     return alteration
 
 def get_combined_timetable(user_id):
-    tt = get_time_table(user_id)
+    timettable = get_time_table(user_id)
     alterations = get_alteration(user_id)
-    timetable = []
+    final_timetable = []
 
     for location, start, end, day, week, title in alterations:
         entry = (
@@ -115,8 +109,8 @@ def get_combined_timetable(user_id):
             week,
             "N/A"
         )
-        timetable.append(entry)
-    for day, start, end, subject, location, week, teacher in tt:
+        final_timetable.append(entry)
+    for day, start, end, subject, location, week, teacher in timettable:
         entry = (
             day,
             start,
@@ -126,8 +120,8 @@ def get_combined_timetable(user_id):
             week,
             teacher
         )
-        timetable.append(entry)
-    return sorted(timetable, key=lambda x: (x[5], x[0], x[1]))
+        final_timetable.append(entry)
+    return sorted(final_timetable, key=lambda x: (x[5], x[0], x[1]))
 
 def update_current_location(user_id, location):
     locationID = DB_interface.get_data("SELECT LocationID FROM LOCATIONS WHERE LocationName = ?", (location,))
@@ -157,6 +151,17 @@ def update_password(user_id, current_password, new_password):
     """, (new_password, user_id, current_password))
     return True
 
+def send_email_code(to_email, code):
+    to_email=os.environ.get('email') # for testing
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(os.environ.get('email'), os.environ.get('app_password'))
+            message = f"Subject: Your MFA Code\n\nYour verification code is: {code}"
+            server.sendmail(os.environ.get('email'), to_email, message)
+    except Exception as e:
+        print(f"Email send error: {e}")
+
 
 zone = {
     "Home": Polygon([
@@ -173,7 +178,7 @@ zone = {
         (-1.2676066, 51.7771625),
         (-1.2678078, 51.7772670),
         (-1.2678561, 51.7773865)]),
-    "Maths": Polygon([
+    "Humanity": Polygon([
         (-1.2683425, 51.7778901),
         (-1.2682325, 51.7777723),
         (-1.2679722, 51.7778105),
@@ -229,7 +234,7 @@ zone = {
         (-1.2675269, 51.7764094),
         (-1.2677604, 51.7763364)
     ]),
-    "Humanity": Polygon([
+    "Maths": Polygon([
         (-1.2672622, 51.7764747),
         (-1.2671401, 51.7763345),
         (-1.2673749, 51.7762565),
@@ -292,6 +297,27 @@ def change_password():
 
     return redirect(url_for('studentPage'))
 
+@app.route('/change_image', methods=['GET', 'POST'])
+def change_image():
+    if request.method == 'POST':
+        img = request.files['imageUpload']
+        f_name=encrypt(str(session['user_id'])) + ".png"
+        img.save("WEBPAGE/static/img/faces/" + f_name)
+
+        image = Image.open("WEBPAGE/static/img/faces/" + f_name)
+        image = image.convert("RGB")
+        image = image.crop((0, 0, min(image.size), min(image.size)))
+        image = image.resize((150, 150))
+        image = image.rotate(-90, expand=True)
+        image.save("WEBPAGE/static/img/faces/" + f_name, "PNG")
+
+        DB_interface.execute_query(
+            "UPDATE ACCOUNTS SET Image = ? WHERE UserID = ?",
+            (f"faces\\{f_name}", session['user_id'])
+        )
+        return redirect(url_for('studentPage'))
+    return render_template('change_image.html')
+
 @app.route('/add_account', methods=['GET', 'POST'])
 def add_account():
     response=False
@@ -324,10 +350,27 @@ def add_account():
         flash("Account added successfully!", "success")
         return redirect(url_for('adminAddAccount'))
 
+@app.route('/logout')
+def logout():
+    token = request.cookies.get('rememberToken')
+    if token:
+        DB_interface.execute_query(
+            "DELETE FROM REMEMBER_ME WHERE Token = ?", (token,)
+        )
+
+    #clear data
+    session.clear()
+
+    resp = make_response(redirect(url_for('login')))
+    resp.set_cookie('rememberToken', '', expires=0)
+    return resp
+
+
 
 #pages
 @app.route("/page")
 def page():
+    print("Page requested")
     requested_page = request.args.get("page")
     logging.debug(f"Requested page: {requested_page}")
     return render_template(f"{requested_page}.html")
@@ -449,26 +492,14 @@ def studentPage():
     )
 
 
-def send_email_code(to_email, code):
-    to_email=os.environ.get('email') # for testing
-    try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()
-            server.login(os.environ.get('email'), os.environ.get('app_password'))
-            message = f"Subject: Your MFA Code\n\nYour verification code is: {code}"
-            server.sendmail(os.environ.get('email'), to_email, message)
-    except Exception as e:
-        print(f"Email send error: {e}")
-
-
 @app.route('/multi_factor_auth', methods=['GET', 'POST'])
 def mfa():
     if request.method == 'POST':
         code = request.form['code']
         user_id = session.get('pending_user')
-        if user_id and mfa_codes.get(user_id) == code:
-            mfa_codes.pop(user_id, None)
+        if user_id and session["mfa_code"] == code:
             session.pop('pending_user', None)
+            session.pop('mfa_code', None)
             return redirect(url_for('studentPage'))
         else:
             return render_template('multi_factor_auth.html', 
@@ -481,24 +512,27 @@ def mfa():
                            emailType=session.get('pending_emailType'))
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST']) 
 def login():
     # remove old
     DB_interface.execute_query(
-    "DELETE FROM REMEMBER_ME WHERE ExpiryDate <= CURRENT_TIMESTAMP"
+        "DELETE FROM REMEMBER_ME WHERE ExpiryDate <= CURRENT_TIMESTAMP"
     )
+
+    token = request.cookies.get('rememberToken')
+    print(f"Token from cookie: {token}")
+    if token:
+        user = DB_interface.get_data(
+            "SELECT UserID FROM REMEMBER_ME WHERE Token = ? AND ExpiryDate > CURRENT_TIMESTAMP",
+            (token,)
+        )
+        if user:
+            session['user_id'] = user[0][0]
+            return make_response(redirect(url_for('studentPage')))
 
     # check for cookie token
     if request.method == 'POST':
-        token = request.cookies.get('remember_token')
-        if token:
-            user = DB_interface.get_data("SELECT UserID FROM REMEMBER_ME WHERE Token = ? AND ExpiryDate > CURRENT_TIMESTAMP", (token,))
-            if user:
-                session['user_id'] = user[0][0]
-                return redirect(url_for('studentPage'))
-
-
-        # get credentials and Remember Me button
+        # get inputs button
         emailType = request.form['emailType']
         email = request.form["email"]
         remember_me = request.form.get('rememberMe', 'off') == 'on'
@@ -507,8 +541,21 @@ def login():
 
         if user_id:
             session['user_id'] = user_id
-            response = make_response(redirect(url_for('studentPage')))
 
+            # store login info for MFA
+            session['pending_user'] = user_id
+            session['pending_email'] = email
+            session['pending_emailType'] = emailType
+
+            # MFA code + send
+            code = str(random.randint(100000, 999999))
+            session['mfa_code'] = code
+            send_email_code(email, code)
+
+            # redirect to MFA page
+            resp = make_response(redirect(url_for('mfa')))
+
+            # handle Remember Me
             if remember_me:
                 token = secrets.token_hex(32)
                 expires = datetime.now() + timedelta(days=30)
@@ -517,24 +564,12 @@ def login():
                     "INSERT INTO REMEMBER_ME (UserID, Token, ExpiryDate) VALUES (?, ?, ?)",
                     (user_id, token, expires)
                 )
-                response.set_cookie('remember_token', token, max_age=60*60*24*30)
-
-            session['pending_user'] = user_id
-            session['pending_email'] = email
-            session['pending_emailType'] = emailType
-
-            # ✅ generate MFA code + send
-            code = str(random.randint(100000, 999999))
-            mfa_codes[user_id] = code
-            send_email_code(email, code)
-
-            # pass remember-me response until after MFA success
-            resp = make_response(redirect(url_for('mfa')))
-
+                resp.set_cookie('rememberToken', token, max_age=60*60*24*30)
 
             return resp
         else:
             return render_template('login.html', error="Invalid email or password")
+
     return render_template('login.html')
 
 

@@ -33,6 +33,8 @@ def execute_query(query, params=()):
         cursor.execute(query, params)
         conn.commit()
         close(conn)
+        return True
     except sqlite3.Error as e:
         print(f"Error in execute_query: {e}")
         close(conn)
+        return False

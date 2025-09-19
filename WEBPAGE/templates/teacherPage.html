@@ -9,7 +9,7 @@
     <h2>Teacher Page</h2>
     <button class="settings-btn" onclick="Panel()">Settings ⚙️</button>
     <div id="sidePanel" class="side-panel">
-        <a href="">Logout</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
         <a onclick="showChangePassword()">Change Password</a>
         <a href="">Change Image</a>
         <a href="">Add/Change Home Email</a>
@@ -39,7 +39,6 @@
 
 
     <script src="{{ url_for('static', filename='js/side-bar.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/Change-Password.js') }}"></script>
     <script src="{{ url_for('static', filename='js/TeacherPage-scr.js') }}"></script>
 </body>
 </html>

@@ -3,10 +3,49 @@
 <head>
     <title>Student</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style-studentPage.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-sidePanel.css') }}">
 </head>
 {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %}
 {% set weeks = ['Week A', 'Week B'] %}
 <body>
+    <div>
+        <button class="settings-btn" onclick="Panel()">Settings ⚙️</button>
+        <div id="sidePanel" class="side-panel">
+            <a href="{{ url_for('logout') }}">Logout</a>
+            <a onclick="showChangePassword()">Change Password</a>
+            <a href="">Change Image</a>
+            <a href="">Add/Change Home Email</a>
+        </div>
+
+        <div id="changePasswordForm" class="change-password">
+            <button class="close-modal" onclick="hideChangePassword()">×</button>
+            <h3>Change Password</h3>
+            <form method="post" action="{{ url_for('change_password') }}">
+                <label for="current_password">Current Password:</label>
+                <input type="password" id="current_password" name="current_password" required>
+
+                <label for="new_password">New Password:</label>
+                <input type="password" id="new_password" name="new_password" required>
+
+                <label for="confirm_password">Confirm New Password:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+
+                <input type="submit" value="Change Password">
+            </form>
+        </div>
+
+        <div id="changeImageForm" class="change-image">
+            <button class="close-modal" onclick="hideChangeImage()">×</button>
+            <h3>Change Profile Pic</h3>
+            <form method="post" action="{{ url_for('change_image') }}" enctype="multipart/form-data">
+                <label for="imageUpload">Upload New Profile Pic:</label>
+                <input type="file" id="imageUpload" name="imageUpload" accept="image/*" required>
+                <input type="submit" value="Change Picture">
+            </form>
+        </div>
+
+    </div>
+
     <h2>Your Timetable</h2>
 
     <div class="container">
@@ -92,6 +131,7 @@
             {% endfor %}
         </tbody>
     </table>
+    <script src="{{ url_for('static', filename='js/side-bar.js' ) }}"></script>
     <script src="{{ url_for('static', filename='js/get-location.js') }}"></script>
 </body>
 </html>
