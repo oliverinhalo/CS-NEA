@@ -280,6 +280,32 @@ def update():
         return redirect(url_for('studentPage'))
     return render_template('update.html', locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")])
 
+
+@app.route('/logout')
+def logout():
+    token = request.cookies.get('rememberToken')
+    if token:
+        DB_interface.execute_query(
+            "DELETE FROM REMEMBER_ME WHERE Token = ?", (token,)
+        )
+
+    #clear data
+    session.clear()
+
+    resp = make_response(redirect(url_for('login')))
+    resp.set_cookie('rememberToken', '', expires=0)
+    return resp
+
+
+
+#pages
+@app.route("/page")
+def page():
+    print("Page requested")
+    requested_page = request.args.get("page")
+    logging.debug(f"Requested page: {requested_page}")
+    return render_template(f"{requested_page}.html")
+
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     if request.method == 'POST':
@@ -349,37 +375,48 @@ def add_account():
     else:
         flash("Account added successfully!", "success")
         return redirect(url_for('adminAddAccount'))
-
-@app.route('/logout')
-def logout():
-    token = request.cookies.get('rememberToken')
-    if token:
-        DB_interface.execute_query(
-            "DELETE FROM REMEMBER_ME WHERE Token = ?", (token,)
-        )
-
-    #clear data
-    session.clear()
-
-    resp = make_response(redirect(url_for('login')))
-    resp.set_cookie('rememberToken', '', expires=0)
-    return resp
-
-
-
-#pages
-@app.route("/page")
-def page():
-    print("Page requested")
-    requested_page = request.args.get("page")
-    logging.debug(f"Requested page: {requested_page}")
-    return render_template(f"{requested_page}.html")
-
-
+    
 @app.route('/sub/adminAddAccount', methods=['GET', 'POST'])
 def adminAddAccount():
     return render_template('sub/adminAddAccount.html')
 
+@app.route('/sub/adminRemoveAccount', methods=['GET', 'POST'])
+def adminRemoveAccount():
+    if request.method == 'POST':
+        email = request.form['email']
+        del_type = request.form['del_type']
+        if del_type == "True":
+            image = DB_interface.get_data("select Image from accounts where schoolemail = ?", (email,))
+            if image and image[0][0]:
+                try:
+                    os.remove("WEBPAGE/static/" + image[0][0].replace("\\", "/"))
+                except Exception as e:
+                    print(f"Error deleting image: {e}")
+
+            response = DB_interface.execute_query(
+                "DELETE FROM ACCOUNTS WHERE SchoolEmail = ?;" \
+                "DELETE FROM STUDENT_INFO WHERE UserID NOT IN (SELECT UserID FROM ACCOUNTS);" \
+                "DELETE FROM TEACHER_INFO WHERE UserID NOT IN (SELECT UserID FROM ACCOUNTS);" \
+                "DELETE FROM TIMETABLE WHERE UserID NOT IN (SELECT UserID FROM ACCOUNTS);" \
+                "DELETE FROM ALTERATION WHERE UserID NOT IN (SELECT UserID FROM ACCOUNTS);" \
+                "DELETE FROM REMEMBER_ME WHERE UserID NOT IN (SELECT UserID FROM ACCOUNTS);",
+                (email,)
+            )
+            if not response:
+                return redirect(url_for('adminRemoveAccount'))
+            else:
+                return redirect(url_for('adminRemoveAccount'))
+        else:
+            response = DB_interface.execute_query(
+                "DELETE FROM ACCOUNTS WHERE SchoolEmail = ?",
+                (email,)
+            )
+            if not response:
+                return redirect(url_for('adminRemoveAccount'))
+            else:
+                return redirect(url_for('adminRemoveAccount'))
+        
+    return render_template('sub/adminRemoveAccount.html')
 
 @app.route('/sub/teacherList', methods=['GET'])
 def teacher_list():
@@ -422,7 +459,7 @@ def teacher_tiles():
             AND RoleID = 0
             AND (FirstName LIKE ? OR LastName LIKE ?)
     """
-    #t="08:35"
+    t="08:35" # for testing
     params = [t, t, d, w, f"%{search_name}%", f"%{search_name}%"]
 
     if houses:

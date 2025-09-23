@@ -26,6 +26,8 @@
 }
 
 .login-form {
+    transform: translateY(50px);
+
     max-width: 400px;
     margin: 0 auto;
     padding: 20px;
@@ -69,10 +71,13 @@ body {
     align-items: center;
     font-family: Arial, sans-serif;
     background: #2A7B9B;
-    background: linear-gradient(90deg, rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
+    background-image: radial-gradient(circle, #edabd1, #d099c7, #b188bd, #9179b2, #6e6aa5, #5b72ae, #4279b5, #1880b8, #009fcf, #00bee0, #24ddeb, #5ffbf1);
     margin: 0;
     padding: 20px;
     animation: fadeIn 0.75s ease-in-out;
+
+    height: 100vh;
+    width: 100%;
 }
 
 .form-bottom {
@@ -107,4 +112,15 @@ body {
     to {
         opacity: 1;
     }
+}
+
+.container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-75%);
+}
+
+.header {
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }

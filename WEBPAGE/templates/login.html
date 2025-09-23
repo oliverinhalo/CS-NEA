@@ -7,8 +7,10 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="title">Welcome to Hooper's School</h1>
-        <h2 class="subtitle">Pupil Tracker</h2>
+        <div class="header">
+            <h1 class="title">Welcome to Hooper's School</h1>
+            <h2 class="subtitle">Pupil Tracker</h2>
+        </div>
 
         <div class="toggle-buttons">
             <button type="button" class="active" onclick="setEmailType('school')">School Email</button>
@@ -36,7 +38,6 @@
             <p class="error">{{ error }}</p>
         {% endif %}
     </div>
-
     <script src="{{ url_for('static', filename='js/login-toggle.js') }}"></script>
 </body>
 </html>
