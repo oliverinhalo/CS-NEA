@@ -1,0 +1,33 @@
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-adminSQLQuery.css') }}">
+    <title>Admin SQL Query</title>
+</head>
+<body>
+    <form action="/sub/adminSQLQuery" method="post">
+        <label for="query">Enter your SQLite query:</label>
+        <textarea id="query" name="query" rows="4" cols="80" required></textarea>
+        <br>
+        <input type="submit" onclick="alert('Are you sure?')" value="Execute Query">
+    </form>
+    <div class="results">
+        {% if response %}
+            <h2>Query Results</h2>
+            <table border="1">
+                <tbody>
+                    {% for row in response %}
+                        <tr>
+                            {% for col in row %}
+                                <td>{{ col }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No results found.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

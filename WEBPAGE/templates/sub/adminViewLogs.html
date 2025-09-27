@@ -1,0 +1,34 @@
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-adminViewLogs.css') }}">
+    <title>Admin view Logs</title>
+</head>
+<body>
+    <h1>Admin View Logs</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Log Level</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+                {% if log[1] == 'ERROR' %}
+                    <tr style="background-color: #eb1426;">
+                {% elif log[1] == 'WARNING' %}
+                    <tr style="background-color: #f7980a;">
+                {% else %}
+                    <tr style="background-color: #8fffa9;">
+                {% endif %}
+
+                    <td>{{ log[0] }}</td>
+                    <td>{{ log[1] }}</td>
+                    <td>{{ log[2] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</html>

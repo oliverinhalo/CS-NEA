@@ -3,7 +3,6 @@
 <head>
     <title>Student</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style-studentPage.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style-sidePanel.css') }}">
 </head>
 {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %}
 {% set weeks = ['Week A', 'Week B'] %}
@@ -13,8 +12,7 @@
         <div id="sidePanel" class="side-panel">
             <a href="{{ url_for('logout') }}">Logout</a>
             <a onclick="showChangePassword()">Change Password</a>
-            <a href="">Change Image</a>
-            <a href="">Add/Change Home Email</a>
+            <a onclick="showChangeImage()">Change Image</a>
         </div>
 
         <div id="changePasswordForm" class="change-password">
@@ -60,78 +58,111 @@
             <button class="btn" type="submit">Update Location</button>
         </form>
     </div>
+    <div>
+        <button onclick="ShowTraditional(this)" class="timeTable-View-button">Traditional</button>
+        <button onclick="ShowList(this)" class="timeTable-View-button active">List View</button>
+    </div>
+    <div class="TimeTable">
+        <table>
+            <thead>
+                <tr>
+                    {% for day in days %}
+                        <th>{{ day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for day in days %}
+                        <td>
+                            {% for entry in timeTable if days[entry[0]] == day and entry[5] == current_week %}
+                                <div class="lesson">
+                                    <strong>{{ entry[3] }}</strong><br>
+                                    {{ entry[1] }} - {{ entry[2] }}<br>
+                                    {{ entry[4] }}<br>
+                                    {{ entry[6] }}
+                                </div>
+                            {% endfor %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="listView">
+        <table>
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Subject</th>
+                    <th>Location</th>
+                    <th>Week</th>
+                    <th>Teacher</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="7" class="headder">Last - Now - Next</td></tr>
+                {% if last is not none %}
+                    {% set row = timeTable[last] %}
+                    <tr class="summary-last">
+                        <td>{{ days[row[0]] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ weeks[row[5]-1] }}</td>
+                        <td>{{ row[6] }}</td>
+                    </tr>
+                {% endif %}
 
-    <table>
-        <thead>
-            <tr>
-                <th>Day</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Subject</th>
-                <th>Location</th>
-                <th>Week</th>
-                <th>Teacher</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td colspan="7" class="headder">Last - Now - Next</td></tr>
-            {% if last is not none %}
-                {% set row = timeTable[last] %}
-                <tr class="summary-last">
-                    <td>{{ days[row[0]] }}</td>
-                    <td>{{ row[1] }}</td>
-                    <td>{{ row[2] }}</td>
-                    <td>{{ row[3] }}</td>
-                    <td>{{ row[4] }}</td>
-                    <td>{{ weeks[row[5]-1] }}</td>
-                    <td>{{ row[6] }}</td>
-                </tr>
-            {% endif %}
+                {% if last is not none %}
+                    {% set row = timeTable[last+1] %}
+                    <tr class="summary-now">
+                        <td>{{ days[row[0]] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ weeks[row[5]-1] }}</td>
+                        <td>{{ row[6] }}</td>
+                    </tr>
+                {% endif %}
 
-            {% if last is not none %}
-                {% set row = timeTable[last+1] %}
-                <tr class="summary-now">
-                    <td>{{ days[row[0]] }}</td>
-                    <td>{{ row[1] }}</td>
-                    <td>{{ row[2] }}</td>
-                    <td>{{ row[3] }}</td>
-                    <td>{{ row[4] }}</td>
-                    <td>{{ weeks[row[5]-1] }}</td>
-                    <td>{{ row[6] }}</td>
-                </tr>
-            {% endif %}
-
-            {% if next is not none %}
-                {% set row = timeTable[next] %}
-                <tr class="summary-next">
-                    <td>{{ days[row[0]] }}</td>
-                    <td>{{ row[1] }}</td>
-                    <td>{{ row[2] }}</td>
-                    <td>{{ row[3] }}</td>
-                    <td>{{ row[4] }}</td>
-                    <td>{{ weeks[row[5]-1] }}</td>
-                    <td>{{ row[6] }}</td>
-                </tr>
-            {% endif %}
-        </tbody>
-        <tr><td colspan="7" class="gap"></td></tr>
-        <tbody>
-            <tr><td colspan="7" class="headder">Full TimeTable</td></tr>
-            {% for row in timeTable %}
-                {% set is_now = (row[0] == current_day) and (row[5] == current_week) and (row[1] <= current_time <= row[2] if row[2] else '24:00') %}
-                <tr class="{{ 'highlight' if is_now else '' }}">
-                    <td>{{ days[row[0]] }}</td>
-                    <td>{{ row[1] }}</td>
-                    <td>{{ row[2] }}</td>
-                    <td>{{ row[3] }}</td>
-                    <td>{{ row[4] }}</td>
-                    <td>{{ weeks[row[5]-1] }}</td>
-                    <td>{{ row[6] }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                {% if next is not none %}
+                    {% set row = timeTable[next] %}
+                    <tr class="summary-next">
+                        <td>{{ days[row[0]] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ weeks[row[5]-1] }}</td>
+                        <td>{{ row[6] }}</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+            <tr><td colspan="7" class="gap"></td></tr>
+            <tbody>
+                <tr><td colspan="7" class="headder">Full TimeTable</td></tr>
+                {% for row in timeTable %}
+                    {% set is_now = (row[0] == current_day) and (row[5] == current_week) and (row[1] <= current_time <= row[2] if row[2] else '24:00') %}
+                    <tr class="{{ 'highlight' if is_now else '' }}">
+                        <td>{{ days[row[0]] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ weeks[row[5]-1] }}</td>
+                        <td>{{ row[6] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     <script src="{{ url_for('static', filename='js/side-bar.js' ) }}"></script>
+    <script src="{{ url_for('static', filename='js/switch-timetables.js' ) }}"></script>
     <script src="{{ url_for('static', filename='js/get-location.js') }}"></script>
 </body>
 </html>

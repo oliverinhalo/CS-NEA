@@ -12,7 +12,8 @@ import smtplib
 import random
 import os
 from dotenv import load_dotenv
-from flask import Flask, flash, request, render_template, redirect, url_for, session, make_response
+import colorama
+from flask import Flask, flash, request, render_template, redirect, url_for, session, make_response,send_from_directory
 
 logger = logging.getLogger('my_logger')
 logger.setLevel(logging.INFO)
@@ -26,18 +27,18 @@ f.setFormatter(formatter)
 c.setLevel(logging.INFO)
 c.setFormatter(formatter)
 
-logger.addHandler(f)
 logger.addHandler(c)
+logger.addHandler(f)
 
 
+logger.info("App initializing")
 app = Flask(__name__)
 app.secret_key = 'user_id'
-
 
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     s.connect(("8.8.8.8", 80))
     my_ip=s.getsockname()[0]
-
+logger.info(f"IP Address: {my_ip}")
 
 load_dotenv()
 
@@ -45,6 +46,7 @@ load_dotenv()
 def check_login(Email, password, email_type):
     email_type = "SchoolEmail" if email_type == "school" else "HomeEmail"
     user_id = DB_interface.get_data(f"SELECT UserID FROM ACCOUNTS WHERE {email_type} = ? AND Password = ?", (Email, password))
+    logger.info("Login checked")
     return user_id[0][0] if user_id else None
 
 def get_time_table(user_id):
@@ -72,6 +74,7 @@ def get_time_table(user_id):
         TIMETABLE.Week, TIMETABLE.Day, TIMETABLE.Start;
 
         """, (timeTableID,))
+    logger.info("Timetable goten")
     return data
 
 def get_alteration(user_id):
@@ -92,11 +95,13 @@ def get_alteration(user_id):
             ALTERATION.UserID = ?""", 
         (user_id,)
         )
+    logger.info("Alterations goten")
     return alteration
 
 def get_combined_timetable(user_id):
-    timettable = get_time_table(user_id)
+    timetable = get_time_table(user_id)
     alterations = get_alteration(user_id)
+    logger.info("Timetable and alterations goten")
     final_timetable = []
 
     for location, start, end, day, week, title in alterations:
@@ -110,7 +115,7 @@ def get_combined_timetable(user_id):
             "N/A"
         )
         final_timetable.append(entry)
-    for day, start, end, subject, location, week, teacher in timettable:
+    for day, start, end, subject, location, week, teacher in timetable:
         entry = (
             day,
             start,
@@ -121,12 +126,15 @@ def get_combined_timetable(user_id):
             teacher
         )
         final_timetable.append(entry)
+    
+    logger.info("Timetable and alterations combined")
     return sorted(final_timetable, key=lambda x: (x[5], x[0], x[1]))
 
 def update_current_location(user_id, location):
     locationID = DB_interface.get_data("SELECT LocationID FROM LOCATIONS WHERE LocationName = ?", (location,))
 
     if locationID:
+        logger.info("Location ID goten")
         locationID = locationID[0][0]
     else:
         return
@@ -136,19 +144,23 @@ def update_current_location(user_id, location):
     t = now.strftime("%H:%M")
     w = 1 if (now.isocalendar().week % 2) == 1 else 2
     DB_interface.execute_query("UPDATE ALTERATION SET LocationID = ?, Start = ?, Day = ?, Week = ? WHERE UserID = ? AND EventID = 1", (locationID, t, d, w, user_id))
+    logger.info("Location updated")
 
 def account_type(user_id):
     account_type = DB_interface.get_data("SELECT RoleID FROM ACCOUNTS WHERE UserID = ?", (user_id,))
     if account_type:
+        logger.info("Account type goten")
         return account_type[0][0]
     return None
 
 def update_password(user_id, current_password, new_password):
     if not DB_interface.get_data("SELECT UserID FROM ACCOUNTS WHERE UserID = ? AND Password = ?", (user_id, current_password)):
+        logger.warning("Current password incorrect")
         return False
     DB_interface.execute_query("""
         UPDATE ACCOUNTS SET Password = ? WHERE UserID = ? AND Password = ?
     """, (new_password, user_id, current_password))
+    logger.info("Password updated successfully")
     return True
 
 def send_email_code(to_email, code):
@@ -159,8 +171,9 @@ def send_email_code(to_email, code):
             server.login(os.environ.get('email'), os.environ.get('app_password'))
             message = f"Subject: Your MFA Code\n\nYour verification code is: {code}"
             server.sendmail(os.environ.get('email'), to_email, message)
+        logger.info(f"Email sent to {to_email}")
     except Exception as e:
-        print(f"Email send error: {e}")
+        logger.error(f"Email send error: {e}")
 
 
 zone = {
@@ -261,22 +274,27 @@ zone = {
 #web functions
 @app.route('/check_location', methods=['POST'])
 def check_location():
+    logger.info("Location checking")
     data = request.get_json()
     lat = data.get('a')
     lon = data.get('o')
     point = Point(lon, lat)
     for location_name, polygon in zone.items():
         if polygon.contains(point):
+            logger.info(f"Location found: {location_name}")
             update_current_location(session['user_id'], location_name)
             break
-
+    logger.info("Location not found")
     return ''
+
 
 @app.route('/update', methods=['GET', 'POST'])
 def update():
     if request.method == 'POST':
+        logger.info("Updating location")
         location = request.form['location']
         update_current_location(session['user_id'], location)
+        logger.info("Location updated")
         return redirect(url_for('studentPage'))
     return render_template('update.html', locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")])
 
@@ -288,12 +306,17 @@ def logout():
         DB_interface.execute_query(
             "DELETE FROM REMEMBER_ME WHERE Token = ?", (token,)
         )
+        logger.info("Remember me token deleted")
 
     #clear data
     session.clear()
+    logger.info("Session cleared")
 
     resp = make_response(redirect(url_for('login')))
     resp.set_cookie('rememberToken', '', expires=0)
+    logger.info("Remember me cookie cleared")
+    
+    logger.info("User logged out")
     return resp
 
 
@@ -301,9 +324,9 @@ def logout():
 #pages
 @app.route("/page")
 def page():
-    print("Page requested")
     requested_page = request.args.get("page")
-    logging.debug(f"Requested page: {requested_page}")
+    print(colorama.Fore.GREEN + f"Requested page: {requested_page}" + colorama.Style.RESET_ALL) # for testing
+    logger.warning(f"Requested page: {requested_page}")
     return render_template(f"{requested_page}.html")
 
 @app.route('/change_password', methods=['GET', 'POST'])
@@ -312,13 +335,14 @@ def change_password():
         current_password = encrypt(request.form['current_password'])
         new_password = encrypt(request.form['new_password'])
         confirm_password = encrypt(request.form['confirm_password'])
+        logger.info("Password change attempt")
 
         if new_password == confirm_password:
             if update_password(session['user_id'], current_password, new_password):
-                print("Password updated successfully")
+                logger.info("Password updated successfully")
                 return redirect(url_for('studentPage'))
             else:
-                print("Password update failed")
+                logger.warning("Password update failed")
                 return redirect(url_for('change_password'))
 
     return redirect(url_for('studentPage'))
@@ -329,19 +353,27 @@ def change_image():
         img = request.files['imageUpload']
         f_name=encrypt(str(session['user_id'])) + ".png"
         img.save("WEBPAGE/static/img/faces/" + f_name)
+        logger.info("file saved")
 
         image = Image.open("WEBPAGE/static/img/faces/" + f_name)
+        logger.info("file opened")
         image = image.convert("RGB")
+        logger.info("file converted")
         image = image.crop((0, 0, min(image.size), min(image.size)))
+        logger.info("file cropped")
         image = image.resize((150, 150))
+        logger.info("file resized")
         image = image.rotate(-90, expand=True)
+        logger.info("file rotated")
         image.save("WEBPAGE/static/img/faces/" + f_name, "PNG")
+        logger.info("file saved")
 
         DB_interface.execute_query(
             "UPDATE ACCOUNTS SET Image = ? WHERE UserID = ?",
             (f"faces\\{f_name}", session['user_id'])
         )
         return redirect(url_for('studentPage'))
+    logger.info("change image page")
     return render_template('change_image.html')
 
 @app.route('/add_account', methods=['GET', 'POST'])
@@ -356,28 +388,36 @@ def add_account():
         img = request.files['imageUpload']
         f_name=encrypt(email) + ".png"
         img.save("WEBPAGE/static/img/faces/" + f_name)
+        logger.info("file saved")
 
+        logger.info(f"file handling {f_name}")
         image = Image.open("WEBPAGE/static/img/faces/" + f_name)
+        logger.info("file opened")
         image = image.convert("RGB")
+        logger.info("file converted")
         image = image.crop((0, 0, min(image.size), min(image.size)))
+        logger.info("file cropped")
         image = image.resize((150, 150))
+        logger.info("file resized")
         image = image.rotate(-90, expand=True)
+        logger.info("file rotated")
         image.save("WEBPAGE/static/img/faces/" + f_name, "PNG")
+        logger.info("file saved")
 
         response = DB_interface.execute_query(
             "INSERT INTO ACCOUNTS (FirstName, LastName, Gender, SchoolEmail, RoleID, Image) VALUES (?, ?, ?, ?, ?, ?)",
             (first_name, last_name, gender, email, role, f"faces\\{f_name}")
         )
     if not response:
-        print("Account Failed to add successfully!")
-        flash("Account Failed to add successfully!", "error")
+        logger.error("Account Failed to add successfully!")
         return redirect(url_for('adminAddAccount'))
     else:
-        flash("Account added successfully!", "success")
+        logger.info("Account added successfully!")
         return redirect(url_for('adminAddAccount'))
     
 @app.route('/sub/adminAddAccount', methods=['GET', 'POST'])
 def adminAddAccount():
+    logger.info("Admin add account page")
     return render_template('sub/adminAddAccount.html')
 
 @app.route('/sub/adminRemoveAccount', methods=['GET', 'POST'])
@@ -385,12 +425,15 @@ def adminRemoveAccount():
     if request.method == 'POST':
         email = request.form['email']
         del_type = request.form['del_type']
+        logger.info(f"Admin remove del_type {del_type}")
         if del_type == "True":
             image = DB_interface.get_data("select Image from accounts where schoolemail = ?", (email,))
             if image and image[0][0]:
                 try:
                     os.remove("WEBPAGE/static/" + image[0][0].replace("\\", "/"))
+                    logger.info(f"Image deleted: {image[0][0]}")
                 except Exception as e:
+                    logger.error(f"Error deleting image: {e}")
                     print(f"Error deleting image: {e}")
 
             response = DB_interface.execute_query(
@@ -402,24 +445,78 @@ def adminRemoveAccount():
                 "DELETE FROM REMEMBER_ME WHERE UserID NOT IN (SELECT UserID FROM ACCOUNTS);",
                 (email,)
             )
-            if not response:
+            if response:
+                logger.info("Account deleted successfully completely")
                 return redirect(url_for('adminRemoveAccount'))
             else:
+                logger.info("Account failed to delete completely")
                 return redirect(url_for('adminRemoveAccount'))
         else:
             response = DB_interface.execute_query(
                 "DELETE FROM ACCOUNTS WHERE SchoolEmail = ?",
                 (email,)
             )
-            if not response:
+            if response:
+                logger.info("Account deleted successfully softly")
                 return redirect(url_for('adminRemoveAccount'))
             else:
+                logger.info("Account failed to delete softly")
                 return redirect(url_for('adminRemoveAccount'))
         
+    logger.info("Admin remove account page")
     return render_template('sub/adminRemoveAccount.html')
+
+@app.route('/sub/adminSQLQuery', methods=['GET', 'POST'])
+def adminSQLQuery():
+    if request.method == 'POST':
+        logger.info("Admin SQL query page")
+        query = request.form['query']
+        response = DB_interface.get_data(query)
+        logger.info(f"Executing SQL query: {query}")
+        logger.info(f"Query returned {len(response)} results")
+        return render_template('sub/adminSQLQuery.html', response=response)
+    logger.info("Admin SQL query page")
+    return render_template('sub/adminSQLQuery.html', response=None)
+
+@app.route('/sub/adminViewAccounts', methods=['GET', 'POST'])
+def adminViewAccounts():
+    accounts = DB_interface.get_data("""
+    SELECT
+        FirstName,
+        LastName,
+        SchoolEmail,
+        HomeEmail,
+        RoleName,
+        CASE
+            WHEN Gender = 'm' THEN 'Male'
+            WHEN Gender = 'f' THEN 'Female'
+            ELSE 'Unknown'
+        END AS Gender
+    FROM
+        ACCOUNTS
+    JOIN
+        ROLES ON ACCOUNTS.RoleID = ROLES.RoleID
+    ORDER BY
+        LastName,
+        FirstName
+    """)
+    logger.info("Admin view accounts page")
+    return render_template('sub/adminViewAccounts.html', accounts=accounts)
+
+@app.route('/sub/adminViewLogs', methods=['GET'])
+def adminViewLogs():
+    with open('app.log', 'r') as log_file:
+        logs = log_file.readlines()
+        logs = [log.split(" - ") for log in logs]
+        logger.info("open log file")
+
+    
+    logger.info("Admin view logs page")
+    return render_template('sub/adminViewLogs.html', logs=logs[::-1])
 
 @app.route('/sub/teacherList', methods=['GET'])
 def teacher_list():
+    logger.info("Teacher list page")
     return render_template('sub/teacherList.html')
 
 
@@ -434,6 +531,7 @@ def teacher_tiles():
     search_name = request.args.get("SearchName", "")
     houses = request.args.getlist("house")
     forms = request.args.getlist("form")
+    logger.info("Teacher tiles data received")
 
     sql = """
         SELECT
@@ -475,20 +573,23 @@ def teacher_tiles():
     params.append(limit)
 
     #DB and dealing with results
+    logger.info(f"Executing SQL query")
     people = DB_interface.get_data(sql, tuple(params))
 
-
+    logger.info(f"Query returned {len(people)} results")
     return render_template('sub/teacherTiles.html', people=people)
 
 
 @app.route('/adminPage', methods=['GET', 'POST'])
 def adminPage():
+    logger.info("Admin page")
     return render_template('adminPage.html')
 
 
 @app.route('/teacherPage', methods=['GET', 'POST'])
 def TeacherPage():
     if account_type(session['user_id']) == 2:
+        logger.info("redirecting to admin page")
         return redirect(url_for('adminPage'))
     
     return render_template('teacherPage.html')
@@ -497,9 +598,11 @@ def TeacherPage():
 @app.route('/studentPage', methods=['GET', 'POST'])
 def studentPage():
     if account_type(session['user_id']) != 0:
+        logger.info("redirecting to teacher page")
         return redirect(url_for('TeacherPage'))
 
     if request.method == 'POST':
+        logger.info("Updating location")
         location = request.form['location']
         update_current_location(session['user_id'], location)
 
@@ -532,13 +635,16 @@ def studentPage():
 @app.route('/multi_factor_auth', methods=['GET', 'POST'])
 def mfa():
     if request.method == 'POST':
+        logger.info("MFA attempt")
         code = request.form['code']
         user_id = session.get('pending_user')
         if user_id and session["mfa_code"] == code:
             session.pop('pending_user', None)
             session.pop('mfa_code', None)
+            logger.info("MFA success")
             return redirect(url_for('studentPage'))
         else:
+            logger.warning("MFA failed")
             return render_template('multi_factor_auth.html', 
                                    email=session.get('pending_email'), 
                                    emailType=session.get('pending_emailType'),
@@ -555,20 +661,22 @@ def login():
     DB_interface.execute_query(
         "DELETE FROM REMEMBER_ME WHERE ExpiryDate <= CURRENT_TIMESTAMP"
     )
+    logger.info("remember me tokens deleted")
 
     token = request.cookies.get('rememberToken')
-    print(f"Token from cookie: {token}")
     if token:
         user = DB_interface.get_data(
             "SELECT UserID FROM REMEMBER_ME WHERE Token = ? AND ExpiryDate > CURRENT_TIMESTAMP",
             (token,)
         )
         if user:
+            logger.info(f"User logged in with remember me")
             session['user_id'] = user[0][0]
             return make_response(redirect(url_for('studentPage')))
 
     # check for cookie token
     if request.method == 'POST':
+        logger.info("Login attempt")
         # get inputs button
         emailType = request.form['emailType']
         email = request.form["email"]
@@ -576,21 +684,26 @@ def login():
         enc = encrypt(request.form['password'])
         user_id = check_login(email, enc, emailType)
 
+
         if user_id:
             session['user_id'] = user_id
 
-            # store login info for MFA
-            session['pending_user'] = user_id
-            session['pending_email'] = email
-            session['pending_emailType'] = emailType
+            if not app.debug:
+                # store login info for MFA
+                session['pending_user'] = user_id
+                session['pending_email'] = email
+                session['pending_emailType'] = emailType
 
-            # MFA code + send
-            code = str(random.randint(100000, 999999))
-            session['mfa_code'] = code
-            send_email_code(email, code)
+                # MFA code + send
+                code = str(random.randint(100000, 999999))
+                session['mfa_code'] = code
+                send_email_code(email, code)
+                logger.info(f"MFA code sent to {email}: {code}")
 
-            # redirect to MFA page
-            resp = make_response(redirect(url_for('mfa')))
+                # redirect to MFA page
+                resp = make_response(redirect(url_for('mfa')))
+            else:
+                resp = make_response(redirect(url_for('studentPage')))
 
             # handle Remember Me
             if remember_me:
@@ -602,28 +715,37 @@ def login():
                     (user_id, token, expires)
                 )
                 resp.set_cookie('rememberToken', token, max_age=60*60*24*30)
+                logger.info(f"rememberToken cookie set: {token}")
 
             return resp
         else:
+            logger.info("Failed login")
             return render_template('login.html', error="Invalid email or password")
-
+        
+    logger.info("Login page")
     return render_template('login.html')
 
 
 @app.route('/')
 def redirect_to_login():
+    logger.info("Redirecting to login page")
     return redirect("/login")
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),'favicon.ico', mimetype='favicon.ico')
 
 @app.errorhandler(404)
 def not_found(e):
-    logging.warning(f"404 error: {e}")
+    requested_url = request.url
+    print(colorama.Fore.YELLOW + f"404 error: {e} at {requested_url}" + colorama.Style.RESET_ALL) # for testing
+    logger.warning(f"404 error: {e} at {requested_url}")
     return render_template("404.html")
 
 
 #start the app
 if __name__ == '__main__':
-    #logging.info(f"Starting app on http://{my_ip}:5000")
+    #logger.info(f"Starting app on http://{my_ip}:5000")
     #app.run(host=my_ip, port=5000, debug=True, threaded=True)
-    logging.info(f"Starting app on http://localhost:8000")
+    logger.info(f"Starting app on http://localhost:8000")
     app.run(host='localhost', port=8000, debug=True, threaded=True)

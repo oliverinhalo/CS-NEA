@@ -1,0 +1,34 @@
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-adminViewAccounts.css') }}">
+    <title>Admin View Accounts</title>
+</head>
+<body>
+    <h1>Admin View Accounts</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>School Email</th>
+                <th>Home Email</th>
+                <th>Role</th>
+                <th>Gender</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>{{ account[0] }}</td>
+                <td>{{ account[1] }}</td>
+                <td>{{ account[2] }}</td>
+                <td>{{ account[3] }}</td>
+                <td>{{ account[4] }}</td>
+                <td>{{ account[5] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
