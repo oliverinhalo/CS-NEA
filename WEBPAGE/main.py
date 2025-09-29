@@ -557,6 +557,7 @@ def teacher_tiles():
             AND RoleID = 0
             AND (FirstName LIKE ? OR LastName LIKE ?)
     """
+    
     t="08:35" # for testing
     params = [t, t, d, w, f"%{search_name}%", f"%{search_name}%"]
 
@@ -620,6 +621,13 @@ def studentPage():
             last = i - 1 if i - 1 >= 0 else None
             next = i + 1 if i + 1 < len(timeTable) else None
 
+    lesson_loaction_cords = "ox27nn"
+    for area in zone:
+        if area in timeTable[next][4]:
+            data = zone[area]
+            center = data.centroid
+            lesson_loaction_cords = f"{center.y},{center.x}" # wrong way round on this
+
     return render_template(
         'studentPage.html',
         timeTable=timeTable,
@@ -628,7 +636,8 @@ def studentPage():
         current_week=w,
         last=last,
         next=next,
-        locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")]
+        locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")],
+        lesson_location=lesson_loaction_cords
     )
 
 

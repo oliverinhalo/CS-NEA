@@ -8,11 +8,19 @@ function setActive(button) {
 function ShowList(button) {
     document.querySelector(".listView").style.display = "block";
     document.querySelector(".TimeTable").style.display = "none";
+    document.querySelector(".map").style.display = "none";
     setActive(button);
 }
 
 function ShowTraditional(button) {
     document.querySelector(".listView").style.display = "none";
     document.querySelector(".TimeTable").style.display = "block";
+    document.querySelector(".map").style.display = "none";
     setActive(button);
+}
+
+function ShowMaps() {
+    document.querySelector(".listView").style.display = "none";
+    document.querySelector(".TimeTable").style.display = "none";
+    document.querySelector(".map").style.display = "block";
 }

@@ -255,6 +255,15 @@ h1 {
     box-sizing: border-box;
 }
 
+.highlighted_lesson {
+    background-color: #ffb4b4;
+    padding: 5px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
 .timeTable-View-button {
     width: 49%;
     background-color: lightgray;
@@ -268,4 +277,11 @@ h1 {
 .timeTable-View-button.active {
     background-color: green; /* selected when colord */
     color: white;
+}
+
+.Maps {
+    border: 1px solid #ccc;
+    width: 100%;
+    height: 25px;
+    vertical-align: top;
 }
