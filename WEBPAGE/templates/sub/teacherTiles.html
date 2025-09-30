@@ -6,8 +6,8 @@
     <title>Teacher</title>
 </head>
 <body>
-    <form method="get">
-        <input type="text" class="SearchName" id="SearchName" name="SearchName" placeholder="Search Name">
+    <form class="inputs" method="get">
+        <input type="text" class="SearchName" id="SearchName" name="SearchName" onchange="this.form.submit()" placeholder="Search Name">
 
         <div class="dropdown-checkbox" id="houseDropdown">
             <div class="dropdown-btn">Select Houses ▾</div>
@@ -49,15 +49,18 @@
             </div>
             <script src="{{ url_for('static', filename='js/dropdown.js') }}"></script>
         </div>
+        
+        <input type="text" class="SearchRoom" id="SearchRoom" name="SearchRoom" onchange="this.form.submit()" placeholder="Search Room">
 
-        <select name="limit" id="limit" class="dropdown" onchange="this.form.submit()">
-            {% set current_limit = request.args.get("limit", "50") %}
-            <option value="20" {{ "selected" if current_limit == "20" else "" }}>Show 20</option>
-            <option value="50" {{ "selected" if current_limit == "50" else "" }}>Show 50</option>
-            <option value="100" {{ "selected" if current_limit == "100" else "" }}>Show 100</option>
-            <option value="1000" {{ "selected" if current_limit == "1000" else "" }}>Show All</option>
-        </select>
-
+        <div>
+            <select name="limit" id="limit" class="dropdown" onchange="this.form.submit()">
+                {% set current_limit = request.args.get("limit", "50") %}
+                <option value="20" {{ "selected" if current_limit == "20" else "" }}>Show 20</option>
+                <option value="50" {{ "selected" if current_limit == "50" else "" }}>Show 50</option>
+                <option value="100" {{ "selected" if current_limit == "100" else "" }}>Show 100</option>
+                <option value="1000" {{ "selected" if current_limit == "1000" else "" }}>Show All</option>
+            </select>
+        </div>
     </form>
 
     {% set house_colors = ["#FF6F61", "#6B5B95", "#88B04B", "#F7CAC9", "#92A8D1", "#FFB347", "#009688"] %}
@@ -99,5 +102,6 @@
         {% endif %}
     </div>
     </div>
+    <script src="{{ url_for('static', filename='js/TeacherTiles-AutoScroll.js') }}"></script>
 </body>
 </html>

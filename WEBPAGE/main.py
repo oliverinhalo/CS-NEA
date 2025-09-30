@@ -514,10 +514,56 @@ def adminViewLogs():
     logger.info("Admin view logs page")
     return render_template('sub/adminViewLogs.html', logs=logs[::-1])
 
-@app.route('/sub/teacherList', methods=['GET'])
+@app.route('/sub/teacherList', methods=['GET']) 
 def teacher_list():
     logger.info("Teacher list page")
-    return render_template('sub/teacherList.html')
+    now = datetime.now()
+    d = now.weekday()
+    t = now.strftime("%H:%M")
+    w = 1 if (now.isocalendar().week % 2) == 1 else 2
+
+    logger.info("Teacher tiles data received")
+
+    sql = """
+        SELECT
+            A.FirstName,
+            A.LastName,
+            S.Name AS SubjectName,
+            CASE
+                WHEN AL.Location IS NOT NULL AND AL.Location <> T.Location THEN 1
+                ELSE 0
+            END AS Status
+        FROM
+            ACCOUNTS A
+        JOIN
+            STUDENT_INFO SI ON A.UserID = SI.UserID
+        JOIN
+            TIMETABLE T ON SI.TimeTableID = T.TimeTableID
+        JOIN
+            SUBJECTS S ON T.SubjectID = S.SubjectID
+        LEFT JOIN
+            ALTERATIONS AL ON AL.TimeTableID = T.TimeTableID
+                AND AL.Day = T.Day
+                AND AL.Week = T.Week
+                AND AL.Start <= ?
+                AND AL.End >= ?
+        WHERE
+            (T.Start <= ?
+            AND T.End >= ?
+            AND T.Day = ?
+            AND T.Week = ?)
+            AND A.RoleID = 0
+    """
+
+    # test override
+    t = "08:35"
+    params = [t, t, t, t, d, w]
+
+    logger.info(f"Executing SQL query")
+    people = DB_interface.get_data(sql, tuple(params))
+    print(people)
+    logger.info(f"Query returned {len(people)} results")
+    return render_template('sub/teacherList.html', people=people)
 
 
 @app.route('/sub/teacherTiles', methods=['GET'])
@@ -531,6 +577,7 @@ def teacher_tiles():
     search_name = request.args.get("SearchName", "")
     houses = request.args.getlist("house")
     forms = request.args.getlist("form")
+    SearchRoom = request.args.get("SearchRoom", "*")
     logger.info("Teacher tiles data received")
 
     sql = """
@@ -549,6 +596,8 @@ def teacher_tiles():
             TIMETABLE ON STUDENT_INFO.TimeTableID = TIMETABLE.TimeTableID
         JOIN
             SUBJECTS ON TIMETABLE.SubjectID = SUBJECTS.SubjectID
+        JOIN
+            LOCATIONS on TIMETABLE.LocationID = LOCATIONS.LocationID 
         WHERE
             (TIMETABLE.Start <= ?
             AND TIMETABLE.End >= ?
@@ -569,6 +618,8 @@ def teacher_tiles():
         placeholders = ','.join(['?'] * len(forms))
         sql += f" AND STUDENT_INFO.Form IN ({placeholders})"
         params.extend(forms)
+    if SearchRoom and SearchRoom != "*":
+        sql += f" AND LOCATIONS.locationName LIKE '%{SearchRoom}%'"
 
     sql += " ORDER BY LastName, FirstName LIMIT ?"
     params.append(limit)
