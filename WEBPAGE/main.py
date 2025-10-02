@@ -13,7 +13,7 @@ import random
 import os
 from dotenv import load_dotenv
 import colorama
-from flask import Flask, flash, request, render_template, redirect, url_for, session, make_response,send_from_directory
+from flask import Flask, request, render_template, redirect, url_for, session, make_response,send_from_directory
 
 logger = logging.getLogger('my_logger')
 logger.setLevel(logging.INFO)
@@ -130,7 +130,7 @@ def get_combined_timetable(user_id):
     logger.info("Timetable and alterations combined")
     return sorted(final_timetable, key=lambda x: (x[5], x[0], x[1]))
 
-def update_current_location(user_id, location):
+def update_current_location(user_id, location, update_type):
     locationID = DB_interface.get_data("SELECT LocationID FROM LOCATIONS WHERE LocationName = ?", (location,))
 
     if locationID:
@@ -143,7 +143,14 @@ def update_current_location(user_id, location):
     d = now.weekday()
     t = now.strftime("%H:%M")
     w = 1 if (now.isocalendar().week % 2) == 1 else 2
-    DB_interface.execute_query("UPDATE ALTERATION SET LocationID = ?, Start = ?, Day = ?, Week = ? WHERE UserID = ? AND EventID = 1", (locationID, t, d, w, user_id))
+
+    if DB_interface.get_data("SELECT EventID FROM ALTERATION WHERE UserID = ? AND EventID = ?", (user_id, update_type)):
+        logger.info("Existing alteration found")
+        DB_interface.execute_query("UPDATE ALTERATION SET LocationID = ?, Start = ?, Day = ?, Week = ? WHERE UserID = ? AND EventID = ?", (locationID, t, d, w, user_id, update_type))
+    else:
+        logger.info("No existing alteration found, creating new one")
+        DB_interface.execute_query("INSERT INTO ALTERATION (UserID, LocationID, Start, Day, Week, EventID, Title) VALUES (?, ?, ?, ?, ?, ?, ?)", (user_id, locationID, t, d, w, update_type, "Now"))
+    
     logger.info("Location updated")
 
 def account_type(user_id):
@@ -291,11 +298,12 @@ def check_location():
     data = request.get_json()
     lat = data.get('a')
     lon = data.get('o')
+    logger.info(f"Coordinates received: lat={lat}, lon={lon}")
     point = Point(lon, lat)
     for location_name, polygon in zone.items():
         if polygon.contains(point):
             logger.info(f"Location found: {location_name}")
-            update_current_location(session['user_id'], location_name)
+            update_current_location(session['user_id'], location_name, "1") # 1 for automatic update
             break
     logger.info("Location not found")
     return ''
@@ -306,7 +314,7 @@ def update():
     if request.method == 'POST':
         logger.info("Updating location")
         location = request.form['location']
-        update_current_location(session['user_id'], location)
+        update_current_location(session['user_id'], location, "2") # 2 for manual update
         logger.info("Location updated")
         return redirect(url_for('studentPage'))
     return render_template('update.html', locations=[i[0] for i in DB_interface.get_data("SELECT LocationName FROM LOCATIONS")])
@@ -545,10 +553,18 @@ def adminSendEmail():
         subject = request.form['subject']
         message_body = request.form['message']
 
-        emails = DB_interface.get_data(f"SELECT {emailType} FROM ACCOUNTS WHERE RoleID=0")
+        logger.info(f"Email type: {emailType}, Subject: {subject}")
+        logger.info(f"Message body: {message_body}")
+
+        if emailType == "*":
+            emails = DB_interface.get_data("SELECT SchoolEmail FROM ACCOUNTS WHERE RoleID=0 AND (SchoolEmail IS NOT NULL)")
+            emails += DB_interface.get_data("SELECT HomeEmail FROM ACCOUNTS WHERE RoleID=0 AND (HomeEmail IS NOT NULL)")
+        else:
+            emails = DB_interface.get_data(f"SELECT {emailType} FROM ACCOUNTS WHERE RoleID=0 AND {emailType} IS NOT NULL")
 
         send_mass_email([email[0] for email in emails if email[0]], subject, message_body)
-        return render_template('sub/adminPage.html')
+        logger.info("Mass email sent")
+        return render_template('sub/adminSendEmail.html')
     
     return render_template('sub/adminSendEmail.html')
 
@@ -695,7 +711,7 @@ def studentPage():
     if request.method == 'POST':
         logger.info("Updating location")
         location = request.form['location']
-        update_current_location(session['user_id'], location)
+        update_current_location(session['user_id'], location, "2") # 2 for manual update
 
     now = datetime.now()
     d = now.weekday()
@@ -833,7 +849,7 @@ def redirect_to_login():
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),'favicon.ico', mimetype='favicon.ico')
+    return send_from_directory(os.path.join(app.root_path, 'static'),'img/favicon.ico', mimetype='image/x-icon')
 
 
 @app.errorhandler(404)
