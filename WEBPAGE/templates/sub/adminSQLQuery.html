@@ -14,7 +14,14 @@
     <div class="results">
         {% if response %}
             <h2>Query Results</h2>
-            <table border="1">
+            <table>
+                <thead>
+                    <tr>
+                        {% for col_name in columns %}
+                            <th>{{ col_name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
                 <tbody>
                     {% for row in response %}
                         <tr>

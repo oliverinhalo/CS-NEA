@@ -90,7 +90,65 @@
                         </thead>
                         <tbody>
                             <tr class="items">
-                                {% set display_value = person[5][:4] if person[5]|length > 10 else person[5] %}
+                                {% macro abbreviate(subject) %}
+                                    {%- set mapping = {
+                                        "Geography": "Geo",
+                                        "Physics": "Phys",
+                                        "Biology": "Bio",
+                                        "Drama": "Drama",
+                                        "Classics": "Classics",
+                                        "Design": "Design",
+                                        "Art and Ceramics": "Art&Cer",
+                                        "Ceramics": "Cer",
+                                        "Computer Science": "CS",
+                                        "TPE": "TPE",
+                                        "German": "Ger",
+                                        "German Conversation": "Ger Conv",
+                                        "Chemistry": "Chem",
+                                        "Wellbeing": "WB",
+                                        "Music": "Music",
+                                        "English": "English",
+                                        "History": "History",
+                                        "Mathematics": "Maths",
+                                        "French": "Fr",
+                                        "French Conversation": "Fr Conv",
+                                        "Spanish": "Spa",
+                                        "Spanish Conversation": "Spa Conv",
+                                        "Greek": "Greek",
+                                        "Latin": "Latin",
+                                        "Supervised Study": "SupStu",
+                                        "Learning Support": "LS",
+                                        "Library Study": "LibStu",
+                                        "EAL": "EAL",
+                                        "SESC Sports Science": "SS Sci",
+                                        "SESC Jewellery": "SS Jew",
+                                        "SESC Design": "SS Des",
+                                        "SESC Art": "SS Art",
+                                        "SESC Drama": "SS Dra",
+                                        "SESC Sustainability": "SS Sus",
+                                        "SESC Ancient World": "SS AncW",
+                                        "SESC MT Pathway": "SS MT",
+                                        "Economics": "Econ",
+                                        "History of Art": "HistArt",
+                                        "Politics": "Pol",
+                                        "Classical Civilisation": "ClasCiv",
+                                        "Psychology": "Psych",
+                                        "Textiles": "Tex",
+                                        "Global Politics": "GlobPol",
+                                        "Theory of Knowledge": "TOK",
+                                        "Mathematics (AI)": "Maths AI",
+                                        "Mathematics (AA)": "Maths AA",
+                                        "Environmental Systems": "EnvSys",
+                                        "Philosophy": "Phil",
+                                        "Sports Science": "SportSci",
+                                        "IB meeting": "IB Mtg"
+                                    } -%}
+
+                                    {{ mapping.get(subject, subject) }}
+                                {% endmacro %}
+
+                                {% set display_value = abbreviate(person[5])%}
+
                                 <td>{{ display_value }}</td>
                                 <td>{{ display_value }}</td>
                             </tr>

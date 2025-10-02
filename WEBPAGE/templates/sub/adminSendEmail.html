@@ -1,0 +1,23 @@
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-adminSendEmail.css') }}">
+    <title>Send Email to Students</title>
+</head>
+<body>
+    <form action="/sub/adminSendEmail" method="post">
+        <select id="emailType" name="emailType" required>
+            <option value="SchoolEmail">School</option>
+            <option value="HomeEmail">Home</option>
+        </select>
+
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="subject" required>
+
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" rows="6" required></textarea>
+
+        <input type="submit" value="Send to all students">
+    </form>
+</body>
+</html>

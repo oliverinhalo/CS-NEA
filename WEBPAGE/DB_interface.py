@@ -38,3 +38,17 @@ def execute_query(query, params=()):
         print(f"Error in execute_query: {e}")
         close(conn)
         return False
+    
+def get_data_colums(query, params=()):
+    conn = connect()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        close(conn)
+        return rows, columns
+    except sqlite3.Error as e:
+        print(f"Error in get_data: {e}")
+        close(conn)
+        return [], []

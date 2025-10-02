@@ -23,13 +23,13 @@
                     <td>{{ person[0] }}</td>
                     <td>{{ person[1] }}</td>
                     <td>{{ person[2] }}</td>
-                    {% if person[3] == 0 %}
-                        <td>GOOD</td>
-                    {% elif person[3] == 1 %}
-                        <td>less GOOD</td>
-                    {% else %}
-                        <td>BAD</td>
-                    {% endif %}
+                {% if person[3] == 0 %}
+                    <td>Less GOOD</td>
+                {% elif person[3] == 1 %}
+                    <td>GOOD</td>
+                {% else %}
+                    <td>BAD</td>
+                {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

@@ -164,7 +164,7 @@ def update_password(user_id, current_password, new_password):
     return True
 
 def send_email_code(to_email, code):
-    to_email=os.environ.get('email') # for testing
+    to_email = os.environ.get('email') # for testing
     try:
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()
@@ -172,6 +172,19 @@ def send_email_code(to_email, code):
             message = f"Subject: Your MFA Code\n\nYour verification code is: {code}"
             server.sendmail(os.environ.get('email'), to_email, message)
         logger.info(f"Email sent to {to_email}")
+    except Exception as e:
+        logger.error(f"Email send error: {e}")
+
+def send_mass_email(to_emails, subject, message_body):
+    to_emails = [os.environ.get('email')]  # for testing
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(os.environ.get('email'), os.environ.get('app_password'))
+            for to_email in to_emails:
+                message = f"Subject: {subject}\n\n{message_body}"
+                server.sendmail(os.environ.get('email'), to_email, message)
+                logger.info(f"Email sent to {to_email}")
     except Exception as e:
         logger.error(f"Email send error: {e}")
 
@@ -322,12 +335,13 @@ def logout():
 
 
 #pages
-@app.route("/page")
+@app.route("/page", methods=['GET', 'POST'])
 def page():
     requested_page = request.args.get("page")
     print(colorama.Fore.GREEN + f"Requested page: {requested_page}" + colorama.Style.RESET_ALL) # for testing
     logger.warning(f"Requested page: {requested_page}")
     return render_template(f"{requested_page}.html")
+
 
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
@@ -346,6 +360,7 @@ def change_password():
                 return redirect(url_for('change_password'))
 
     return redirect(url_for('studentPage'))
+
 
 @app.route('/change_image', methods=['GET', 'POST'])
 def change_image():
@@ -375,6 +390,7 @@ def change_image():
         return redirect(url_for('studentPage'))
     logger.info("change image page")
     return render_template('change_image.html')
+
 
 @app.route('/add_account', methods=['GET', 'POST'])
 def add_account():
@@ -414,11 +430,13 @@ def add_account():
     else:
         logger.info("Account added successfully!")
         return redirect(url_for('adminAddAccount'))
-    
+
+
 @app.route('/sub/adminAddAccount', methods=['GET', 'POST'])
 def adminAddAccount():
     logger.info("Admin add account page")
     return render_template('sub/adminAddAccount.html')
+
 
 @app.route('/sub/adminRemoveAccount', methods=['GET', 'POST'])
 def adminRemoveAccount():
@@ -466,17 +484,19 @@ def adminRemoveAccount():
     logger.info("Admin remove account page")
     return render_template('sub/adminRemoveAccount.html')
 
+
 @app.route('/sub/adminSQLQuery', methods=['GET', 'POST'])
 def adminSQLQuery():
     if request.method == 'POST':
         logger.info("Admin SQL query page")
         query = request.form['query']
-        response = DB_interface.get_data(query)
+        response, columns = DB_interface.get_data_colums(query)
         logger.info(f"Executing SQL query: {query}")
         logger.info(f"Query returned {len(response)} results")
-        return render_template('sub/adminSQLQuery.html', response=response)
+        return render_template('sub/adminSQLQuery.html', response=response, columns=columns)
     logger.info("Admin SQL query page")
     return render_template('sub/adminSQLQuery.html', response=None)
+
 
 @app.route('/sub/adminViewAccounts', methods=['GET', 'POST'])
 def adminViewAccounts():
@@ -503,6 +523,7 @@ def adminViewAccounts():
     logger.info("Admin view accounts page")
     return render_template('sub/adminViewAccounts.html', accounts=accounts)
 
+
 @app.route('/sub/adminViewLogs', methods=['GET'])
 def adminViewLogs():
     with open('app.log', 'r') as log_file:
@@ -513,6 +534,24 @@ def adminViewLogs():
     
     logger.info("Admin view logs page")
     return render_template('sub/adminViewLogs.html', logs=logs[::-1])
+
+
+@app.route('/sub/adminSendEmail', methods=['GET', 'POST'])
+def adminSendEmail():
+    logger.info("Admin send mass email page")
+    if request.method == 'POST':
+        logger.info("Admin send mass email page")
+        emailType = request.form['emailType']
+        subject = request.form['subject']
+        message_body = request.form['message']
+
+        emails = DB_interface.get_data(f"SELECT {emailType} FROM ACCOUNTS WHERE RoleID=0")
+
+        send_mass_email([email[0] for email in emails if email[0]], subject, message_body)
+        return render_template('sub/adminPage.html')
+    
+    return render_template('sub/adminSendEmail.html')
+
 
 @app.route('/sub/teacherList', methods=['GET']) 
 def teacher_list():
@@ -530,8 +569,9 @@ def teacher_list():
             A.LastName,
             S.Name AS SubjectName,
             CASE
-                WHEN AL.Location IS NOT NULL AND AL.Location <> T.Location THEN 1
-                ELSE 0
+                WHEN AL.LocationID IS NOT NULL AND AL.LocationID <> T.LocationID THEN 1
+                WHEN AL.LocationID IS NULL THEN 0
+                ELSE 2
             END AS Status
         FROM
             ACCOUNTS A
@@ -542,7 +582,7 @@ def teacher_list():
         JOIN
             SUBJECTS S ON T.SubjectID = S.SubjectID
         LEFT JOIN
-            ALTERATIONS AL ON AL.TimeTableID = T.TimeTableID
+            ALTERATION AL ON AL.AlterationID = SI.AlterationID
                 AND AL.Day = T.Day
                 AND AL.Week = T.Week
                 AND AL.Start <= ?
@@ -561,7 +601,6 @@ def teacher_list():
 
     logger.info(f"Executing SQL query")
     people = DB_interface.get_data(sql, tuple(params))
-    print(people)
     logger.info(f"Query returned {len(people)} results")
     return render_template('sub/teacherList.html', people=people)
 
@@ -791,9 +830,11 @@ def redirect_to_login():
     logger.info("Redirecting to login page")
     return redirect("/login")
 
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),'favicon.ico', mimetype='favicon.ico')
+
 
 @app.errorhandler(404)
 def not_found(e):
@@ -801,6 +842,15 @@ def not_found(e):
     print(colorama.Fore.YELLOW + f"404 error: {e} at {requested_url}" + colorama.Style.RESET_ALL) # for testing
     logger.warning(f"404 error: {e} at {requested_url}")
     return render_template("404.html")
+
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    requested_url = request.url
+    method = request.method
+    print(colorama.Fore.RED + f"405 Method Not Allowed: {method} {requested_url}" + colorama.Style.RESET_ALL) # for testing
+    logger.error(f"405 Method Not Allowed: {method} request to {requested_url}")
+    return f"Method {method} not allowed for {requested_url}", 405
 
 
 #start the app
