@@ -6,6 +6,11 @@
 </head>
 <body>
     <h1>Admin View Logs</h1>
+    <div>
+        <button type="button" id="info-btn" class="filter-btn active" onclick="filterLogs('INFO')">INFO</button>
+        <button type="button" id="warning-btn" class="filter-btn active" onclick="filterLogs('WARNING')">WARNING</button>
+        <button type="button" id="error-btn" class="filter-btn active" onclick="filterLogs('ERROR')">ERROR</button>
+    </div>
     <table>
         <thead>
             <tr>
@@ -14,16 +19,15 @@
                 <th>Message</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="log-tbody">
             {% for log in logs %}
                 {% if log[1] == 'ERROR' %}
-                    <tr style="background-color: #eb1426;">
+                    <tr class="log-row" data-level="{{ log[1] }}" style="background-color: #eb1426;">
                 {% elif log[1] == 'WARNING' %}
-                    <tr style="background-color: #f7980a;">
-                {% else %}
-                    <tr style="background-color: #8fffa9;">
+                    <tr class="log-row" data-level="{{ log[1] }}" style="background-color: #f7980a;">
+                {% elif log[1] == 'INFO' %}
+                    <tr class="log-row" data-level="{{ log[1] }}" style="background-color: #8fffa9;">
                 {% endif %}
-
                     <td>{{ log[0] }}</td>
                     <td>{{ log[1] }}</td>
                     <td>{{ log[2] }}</td>
@@ -31,4 +35,37 @@
             {% endfor %}
         </tbody>
     </table>
+    <script>
+        let activeFilters = new Set(["INFO", "WARNING", "ERROR"]);
+        
+        function filterLogs(level) {
+            const button = document.getElementById(level.toLowerCase() + '-btn');
+            
+            if (activeFilters.has(level)) {
+                activeFilters.delete(level);
+                button.classList.remove('active');
+            } else {
+                activeFilters.add(level);
+                button.classList.add('active');
+            }
+            updateLogDisplay();
+        }
+        
+        function updateLogDisplay() {
+            const rows = document.querySelectorAll('.log-row');
+            
+            rows.forEach(row => {
+                const level = row.getAttribute('data-level');
+                if (activeFilters.has(level)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLogDisplay();
+        });
+    </script>
 </html>

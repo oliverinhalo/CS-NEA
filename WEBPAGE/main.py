@@ -38,6 +38,8 @@ app.secret_key = 'user_id'
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     s.connect(("8.8.8.8", 80))
     my_ip=s.getsockname()[0]
+
+
 logger.info(f"IP Address: {my_ip}")
 
 load_dotenv()
@@ -871,7 +873,7 @@ def method_not_allowed(e):
 
 #start the app
 if __name__ == '__main__':
-    #logger.info(f"Starting app on http://{my_ip}:5000")
-    #app.run(host=my_ip, port=5000, debug=True, threaded=True)
-    logger.info(f"Starting app on http://localhost:8000")
-    app.run(host='localhost', port=8000, debug=True, threaded=True)
+    logger.info(f"Starting app on http://{my_ip}:5000")
+    app.run(host=my_ip, port=5000, debug=True, threaded=True)
+    #logger.info(f"Starting app on http://localhost:8000")
+    #app.run(host='localhost', port=8000, debug=True, threaded=True)

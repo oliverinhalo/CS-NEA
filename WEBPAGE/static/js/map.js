@@ -4,6 +4,4 @@ navigator.geolocation.getCurrentPosition(function(pos) {;
     let to = window.FLASK_DATA.lesson_location;
     let iframe = document.getElementById("mapFrame");
     iframe.src = `https://www.google.com/maps?saddr=${lat},${lng}&daddr=${to}&dirflg=w&output=embed`; // if change rember ` instead of " or '
-}, function() {
-  alert("Could not get location.");
 });

@@ -31,6 +31,35 @@ h1 {
   text-align: center;
 }
 
+/* Filter buttons styling */
+.filter-btn {
+  padding: 8px 16px;
+  margin: 0 4px 16px 4px;
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  border-color: var(--header);
+  color: var(--header);
+}
+
+.filter-btn.active {
+  background: var(--header);
+  color: white;
+  border-color: var(--header);
+}
+
+.filter-btn.active:hover {
+  background: #374151;
+}
+
 table {
   width: 100%;
   max-width: 95%; /* nearly fills the screen */
