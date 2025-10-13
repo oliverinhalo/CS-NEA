@@ -706,6 +706,9 @@ def TeacherPage():
 
 @app.route('/studentPage', methods=['GET', 'POST'])
 def studentPage():
+    if not session.get('user_id'):
+        logger.info("No user logged in id, redirecting to logins")
+        return redirect(url_for('login'))
     if account_type(session['user_id']) in [1,2]:
         logger.info("redirecting to teacher page")
         return redirect(url_for('TeacherPage'))

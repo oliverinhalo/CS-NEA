@@ -34,10 +34,13 @@
                 <button type="submit">Login</button>
             </div>
         </form>
-        {% if error %}
-            <p class="error">{{ error }}</p>
-        {% endif %}
     </div>
+    <script>
+        const errorMsg = {{ (error|default(None))|tojson }}; // Convert to JSON as well as non for no attribute
+        if (errorMsg) {
+            alert(errorMsg);
+        }
+    </script>
     <script src="{{ url_for('static', filename='js/login-toggle.js') }}"></script>
 </body>
 </html>

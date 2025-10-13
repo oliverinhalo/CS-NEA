@@ -13,3 +13,5 @@ __pycache__
 WEBPAGE/__pycache__
 WEBPAGE/static/img
 .env
+app.log
+Test.py
