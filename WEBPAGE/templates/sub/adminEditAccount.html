@@ -1,0 +1,39 @@
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-adminEditAccount.css') }}"> 
+    <title>Admin Edit Account</title>
+</head>
+<body>
+    <h1>Admin Edit Account</h1>
+    <p>Editing account with User ID: {{ user_id }}</p>
+    <form method="POST">
+        <label for="first_name">First Name: </label>
+        <input type="text" id="first_name" name="first_name" value="{{ account[0] }}"><br><br>
+
+        <label for="last_name">Last Name: </label>
+        <input type="text" id="last_name" name="last_name" value="{{ account[1] }}"><br><br>
+
+        <label for="school_email">School Email: </label>
+        <input type="email" id="school_email" name="school_email" value="{{ account[2] or ''}}"><br><br>
+
+        <label for="home_email">Home Email: </label>
+        <input type="email" id="home_email" name="home_email" value="{{ account[3] or ''}}"><br><br>
+
+        <label for="role">Role: </label>
+        <select id="role" name="role">
+            <option value="0" {% if account[4] == 0 %}selected{% endif %}>Student</option>
+            <option value="1" {% if account[4] == 1 %}selected{% endif %}>Teacher</option>
+            <option value="2" {% if account[4] == 2 %}selected{% endif %}>Admin</option>
+        </select><br><br>
+
+        <label for="gender">Gender: </label>
+        <select id="gender" name="gender">
+            <option value="m" {% if account[5] == 'm' %}selected{% endif %}>Male</option>
+            <option value="f" {% if account[5] == 'f' %}selected{% endif %}>Female</option>
+        </select><br><br>
+
+        <input type="submit" value="Save Changes">
+    </form>
+</body>
+</html>

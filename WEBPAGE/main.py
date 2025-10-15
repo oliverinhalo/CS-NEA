@@ -185,13 +185,13 @@ def send_email_code(to_email, code):
         logger.error(f"Email send error: {e}")
 
 def send_mass_email(to_emails, subject, message_body):
-    to_emails = [os.environ.get('email')]  # for testing
+    to_emails = [os.environ.get('email') for i in range(100)]  # for testing
     try:
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()
             server.login(os.environ.get('email'), os.environ.get('app_password'))
-            for to_email in to_emails:
-                message = f"Subject: {subject}\n\n{message_body}"
+            for i, to_email in enumerate(to_emails):
+                message = f"Subject: {subject}\n\n{message_body}\n\n\n\n\nThis is an automated message, please do not reply.\n{i}"
                 server.sendmail(os.environ.get('email'), to_email, message)
                 logger.info(f"Email sent to {to_email}")
     except Exception as e:
@@ -508,6 +508,34 @@ def adminSQLQuery():
     return render_template('sub/adminSQLQuery.html', response=None)
 
 
+@app.route('/edit_account/<int:user_id>', methods=['GET', 'POST'])
+def edit_account(user_id):
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        school_email = request.form['school_email']
+        home_email = request.form['home_email']
+        role = request.form['role']
+        gender = request.form['gender']
+        logger.info(f"Admin edit account page for user_id {user_id}")
+        sql="UPDATE ACCOUNTS SET"
+        if first_name:
+            sql += f" FirstName = '{first_name}',"
+        if last_name:
+            sql += f" LastName = '{last_name}',"
+        if school_email:
+            sql += f" SchoolEmail = '{school_email}',"
+        if home_email:
+            sql += f" HomeEmail = '{home_email}',"
+        if role:
+            sql += f" RoleID = '{role}',"
+        if gender:
+            sql += f" Gender = '{gender}'"
+        sql += f" WHERE UserID = {user_id}"
+        DB_interface.execute_query(sql)
+        logger.info("Account updated successfully sql: " + sql)
+    return render_template('sub/adminEditAccount.html', user_id=user_id, account=DB_interface.get_data("SELECT FirstName, LastName, SchoolEmail, HomeEmail, RoleID, Gender FROM ACCOUNTS WHERE UserID = ?", (user_id,))[0])
+
 @app.route('/sub/adminViewAccounts', methods=['GET', 'POST'])
 def adminViewAccounts():
     accounts = DB_interface.get_data("""
@@ -521,7 +549,8 @@ def adminViewAccounts():
             WHEN Gender = 'm' THEN 'Male'
             WHEN Gender = 'f' THEN 'Female'
             ELSE 'Unknown'
-        END AS Gender
+        END AS Gender,
+        UserID
     FROM
         ACCOUNTS
     JOIN
@@ -876,7 +905,7 @@ def method_not_allowed(e):
 
 #start the app
 if __name__ == '__main__':
-    logger.info(f"Starting app on http://{my_ip}:5000")
-    app.run(host=my_ip, port=5000, debug=True, threaded=True)
-    #logger.info(f"Starting app on http://localhost:8000")
-    #app.run(host='localhost', port=8000, debug=True, threaded=True)
+    #logger.info(f"Starting app on http://{my_ip}:5000")
+    #app.run(host=my_ip, port=5000, debug=True, threaded=True)
+    logger.info(f"Starting app on http://localhost:8000")
+    app.run(host='localhost', port=8000, debug=True, threaded=True)

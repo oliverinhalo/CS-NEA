@@ -15,6 +15,7 @@
                 <th>Home Email</th>
                 <th>Role</th>
                 <th>Gender</th>
+                <th>EDIT</th>
             </tr>
         </thead>
         <tbody>
@@ -26,6 +27,7 @@
                 <td>{{ account[3] }}</td>
                 <td>{{ account[4] }}</td>
                 <td>{{ account[5] }}</td>
+                <td><a href="{{ url_for('edit_account', user_id=account[6]) }}">✎</a></td>
             </tr>
             {% endfor %}
         </tbody>
