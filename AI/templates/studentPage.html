@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Student{% endblock %}
+
+{% block content %}
+<h1>Your day</h1>
+
+<div class="panel">
+  <div class="meta">
+    <strong>Day:</strong> {{ current_day }} &nbsp;
+    <strong>Time:</strong> {{ current_time }} &nbsp;
+    <strong>Week:</strong> {{ current_week }}
+  </div>
+
+  <div class="columns">
+    <section class="col timetable">
+      <h2>Timetable</h2>
+      {% if timeTable %}
+        <table class="timetable-table">
+          <thead><tr><th>Day</th><th>Start</th><th>End</th><th>Subject</th><th>Location</th><th>Week</th><th>Teacher</th></tr></thead>
+          <tbody>
+            {% for day,start,end,subject,location,week,teacher in timeTable %}
+              <tr class="{% if loop.index0 == next %} upcoming {% endif %} {% if loop.index0 == last %} current {% endif %}">
+                <td>{{ day }}</td>
+                <td>{{ start }}</td>
+                <td>{{ end }}</td>
+                <td>{{ subject }}</td>
+                <td>{{ location }}</td>
+                <td>{{ week }}</td>
+                <td>{{ teacher }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No timetable data available.</p>
+      {% endif %}
+    </section>
+
+    <aside class="col side">
+      <h3>Quick actions</h3>
+      <form id="manual-loc" method="post">
+        <label>Set location
+          <select name="location">
+            {% for loc in locations %}
+              <option value="{{ loc }}">{{ loc }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button type="submit">Update location</button>
+      </form>
+
+      <div class="card">
+        <button id="btn-send-my-location">Share current GPS location</button>
+        <p class="muted">Lesson coords: {{ lesson_location }}</p>
+      </div>
+
+      <div class="card">
+        <a href="{{ url_for('change_image') }}">Change profile image</a>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('btn-send-my-location').addEventListener('click', function(){
+  if (!navigator.geolocation) { alert('Geolocation unsupported'); return; }
+  this.disabled = true;
+  navigator.geolocation.getCurrentPosition(function(pos){
+    fetch('{{ url_for("check_location") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ a: pos.coords.latitude, o: pos.coords.longitude })
+    }).then(r => r.json()).then(data => {
+      alert('Location checked: ' + (data.location || 'not found'));
+      window.location.reload();
+    }).catch(e => { alert('Error: ' + e); console.error(e); });
+  }, function(err){ alert('GPS error: ' + err.message); });
+});
+</script>
+{% endblock %}

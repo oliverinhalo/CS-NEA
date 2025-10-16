@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Change Image{% endblock %}
+{% block content %}
+<h1>Change profile image</h1>
+
+<form method="post" enctype="multipart/form-data" class="card">
+  <label>Choose image (square recommended)
+    <input name="imageUpload" type="file" accept="image/*" required>
+  </label>
+  <div class="actions">
+    <button type="submit">Upload</button>
+    <a href="{{ url_for('studentPage') }}" class="muted">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Teachers - List{% endblock %}
+{% block content %}
+<h1>Teachers now</h1>
+<div class="grid">
+  {% for fn, ln, subject, status in people %}
+    <div class="card teacher-card">
+      <div class="name">{{ fn }} {{ ln }}</div>
+      <div class="subject">{{ subject }}</div>
+      <div class="status">Status: {{ status }}</div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

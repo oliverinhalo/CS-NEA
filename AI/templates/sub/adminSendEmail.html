@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Admin - Send Email{% endblock %}
+{% block content %}
+<h1>Send mass email</h1>
+<form method="post" class="card">
+  <label>Email type
+    <select name="emailType">
+      <option value="SchoolEmail">SchoolEmail</option>
+      <option value="HomeEmail">HomeEmail</option>
+      <option value="*">Both</option>
+    </select>
+  </label>
+
+  <label>Subject <input name="subject" required></label>
+  <label>Message <textarea name="message" rows="6" required></textarea></label>
+  <div class="actions"><button type="submit">Send</button></div>
+</form>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Admin - Add Account{% endblock %}
+{% block content %}
+<h1>Add account</h1>
+<form method="post" enctype="multipart/form-data" class="card">
+  <label>First name <input name="firstName" required></label>
+  <label>Last name <input name="lastName" required></label>
+  <label>Gender
+    <select name="gender"><option value="m">Male</option><option value="f">Female</option></select>
+  </label>
+  <label>Email <input type="email" name="email" required></label>
+  <label>Role <input name="role" value="0"></label>
+  <label>Photo <input type="file" name="imageUpload" accept="image/*" required></label>
+  <div class="actions"><button type="submit">Add account</button></div>
+</form>
+{% endblock %}
