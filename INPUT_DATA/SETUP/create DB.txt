@@ -1,0 +1,92 @@
+CREATE TABLE ROLES (
+    RoleID INTEGER PRIMARY KEY,
+    RoleName TEXT
+);
+
+CREATE TABLE SUBJECTS (
+    SubjectID INTEGER PRIMARY KEY,
+    Name TEXT,
+    UserID INTEGER,
+    EventID INTEGER
+);
+
+CREATE TABLE REMEMBER_ME (
+    Token TEXT PRIMARY KEY,
+    UserID INTEGER,
+    ExpiryDate TEXT,
+    FOREIGN KEY(UserID) REFERENCES ACCOUNTS(UserID)
+);
+
+CREATE TABLE ACCOUNTS (
+    UserID INTEGER PRIMARY KEY,
+    FirstName TEXT,
+    LastName TEXT,
+    SchoolEmail TEXT,
+    HomeEmail TEXT,
+    Gender TEXT,
+    RoleID INTEGER,
+    Password TEXT,
+    Image TEXT
+);
+
+CREATE TABLE EVENTS (
+    EventID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Type TEXT
+);
+
+CREATE TABLE LOCATIONS (
+    LocationID INTEGER PRIMARY KEY,
+    LocationName TEXT
+);
+
+CREATE TABLE STUDENT_INFO (
+    UserID INTEGER,
+    Form TEXT,
+    House TEXT,
+    TimeTableID INTEGER,
+    AlterationID INTEGER,
+    Year INTEGER
+);
+
+CREATE TABLE TIMETABLE (
+    TimeTableID INTEGER,
+    LocationID INTEGER,
+    SubjectID INTEGER,
+    Start TEXT,
+    End TEXT,
+    Day INTEGER,
+    Week INTEGER
+);
+
+CREATE TABLE ALTERATION (
+    AlterationID INTEGER PRIMARY KEY AUTOINCREMENT,
+    UserID INTEGER,
+    LocationID INTEGER,
+    Start TEXT,
+    End TEXT,
+    Day INTEGER,
+    Week INTEGER,
+    Title TEXT,
+    EventID INTEGER
+);
+
+INSERT INTO EVENTS (Type) VALUES (CurrentManual)
+INSERT INTO EVENTS (Type) VALUES (CurrentAuto)
+INSERT INTO EVENTS (Type) VALUES (Academic Lesson)
+INSERT INTO EVENTS (Type) VALUES (Music Lesson)
+INSERT INTO EVENTS (Type) VALUES (Sport)
+INSERT INTO EVENTS (Type) VALUES (Other)
+INSERT INTO EVENTS (Type) VALUES (CCF)
+
+INSERT INTO ROLES (RoleID, RoleName) VALUES (0,"Pupil")
+INSERT INTO ROLES (RoleID, RoleName) VALUES (1,"Teacher")
+INSERT INTO ROLES (RoleID, RoleName) VALUES (2, "Admin")
+
+data = set([i.split(" ")[0] for i in [i[0] for i in DB_interface.get_data("""
+    SELECT LocationName FROM LOCATIONS
+    """)][2:]])
+data = list(set([i if i[0]!="E" else "E" for i in data]))
+for i in data:
+    DB_interface.execute_query("""
+    INSERT INTO LOCATIONS (LocationName) VALUES (?)
+    """, (i,))

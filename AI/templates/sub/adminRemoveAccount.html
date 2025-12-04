@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Admin - Remove Account{% endblock %}
+{% block content %}
+<h1>Remove account</h1>
+<form method="post" class="card">
+  <label>Email <input name="email" type="email" required></label>
+  <label>Delete completely?
+    <select name="del_type">
+      <option value="True">Yes (delete images & related)</option>
+      <option value="False">Soft delete (only account)</option>
+    </select>
+  </label>
+  <div class="actions"><button type="submit">Delete</button></div>
+</form>
+{% endblock %}

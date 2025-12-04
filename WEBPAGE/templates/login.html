@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-login.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Welcome to Hooper's School</h1>
+            <h2 class="subtitle">Pupil Tracker</h2>
+        </div>
+
+        <div class="toggle-buttons">
+            <button type="button" class="active" onclick="setEmailType('school')">School Email</button>
+            <button type="button" onclick="setEmailType('home')">Home Email</button>
+        </div>
+
+        <form class="login-form" action="/login" method="post">
+            <label class="email-label" id="emailLabel" for="email">School Email:</label>
+            <input class="input" type="text" id="email" name="email">
+
+            <label class="password-label" for="password">Password:</label>
+            <input class="input" type="password" id="password" name="password" required>
+
+            <input type="hidden" id="emailType" name="emailType" value="school">
+
+            <div class="form-bottom">
+                <div class="remember-section">
+                    <input type="checkbox" id="rememberMe" class="rememberMe" name="rememberMe" value="on">
+                    <label for="rememberMe">Remember Me</label>
+                </div>
+                <button type="submit">Login</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        const errorMsg = {{ (error|default(None))|tojson }}; // Convert to JSON as well as non for no attribute
+        if (errorMsg) {
+            alert(errorMsg);
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/login-toggle.js') }}"></script>
+</body>
+</html>

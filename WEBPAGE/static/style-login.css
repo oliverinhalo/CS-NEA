@@ -1,0 +1,126 @@
+.toggle-buttons {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.toggle-buttons button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: #ccc;
+}
+
+.toggle-buttons .active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.error {
+    color: red;
+    font-size: 200%;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.login-form {
+    transform: translateY(50px);
+
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: rgba(173, 216, 230, 0.219);
+    border-radius: 20px;
+}
+.password-label {
+    display: block;
+    margin-bottom: 10px;
+}
+.email-label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.input {
+    width: 95%;
+    padding: 10px;
+    font-size: 1rem;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.title {
+    color: #2A7B9B;
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.subtitle {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #2A7B9B;
+}
+
+body {
+    vertical-align: middle;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background: #2A7B9B;
+    background-image: radial-gradient(circle, #edabd1, #d099c7, #b188bd, #9179b2, #6e6aa5, #5b72ae, #4279b5, #1880b8, #009fcf, #00bee0, #24ddeb, #5ffbf1);
+    margin: 0;
+    padding: 20px;
+    animation: fadeIn 0.75s ease-in-out;
+
+    height: 100vh;
+    width: 100%;
+}
+
+.form-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.remember-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-bottom button {
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.rememberMe {
+    width: 20px;
+    height: 20px;
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-75%);
+}
+
+.header {
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}

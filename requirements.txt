@@ -1,0 +1,14 @@
+flask
+requests
+pandas
+gender-guesser
+password-generator
+numpy
+opencv-python
+deepface
+datetime
+secrets
+shapely
+gunicorn
+pillow
+dotenv

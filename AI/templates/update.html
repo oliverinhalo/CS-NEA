@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Update Location{% endblock %}
+{% block content %}
+<h1>Update location</h1>
+<form method="post" class="card">
+  <label>Location
+    <select name="location">
+      {% for loc in locations %}
+        <option>{{ loc }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <div class="actions"><button type="submit">Update</button></div>
+</form>
+{% endblock %}

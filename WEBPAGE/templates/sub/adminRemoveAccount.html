@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-adminRemoveAccount.css') }}">
+    <title>Remove Account</title>
+</head>
+<body>
+    <form action="/adminRemoveAccount" method="post">
+        <label for="email">Enter the school email of the account to remove:</label>
+        <input type="email" id="email" name="email" required>
+        <select id="del_type" name="del_type">
+            <option value="False">Soft deleate</option>
+            <option value="True">Hard delete</option>
+        </select>
+        <br>
+        <label for="conform">I confirm that I want to remove this account.</label>
+        <input type="checkbox" id="conform" name="conform" required>
+        <br>
+        <input type="submit" value="Remove Account">
+    </form>
+</body>
+</html>

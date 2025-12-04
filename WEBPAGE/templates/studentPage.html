@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-studentPage.css') }}">
+</head>
+{% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %}
+{% set weeks = ['Week A', 'Week B'] %}
+<body>
+    <div>
+        <button class="settings-btn" onclick="Panel()">Settings ⚙️</button>
+        <div id="sidePanel" class="side-panel">
+            <a href="{{ url_for('logout') }}">Logout</a>
+            <a onclick="showChangePassword()">Change Password</a>
+            <a onclick="showChangeImage()">Change Image</a>
+        </div>
+
+        <div id="changePasswordForm" class="change-password">
+            <button class="close-modal" onclick="hideChangePassword()">×</button>
+            <h3>Change Password</h3>
+            <form method="post" action="{{ url_for('change_password') }}">
+                <label for="current_password">Current Password:</label>
+                <input type="password" id="current_password" name="current_password" required>
+
+                <label for="new_password">New Password:</label>
+                <input type="password" id="new_password" name="new_password" required oninput="checkPasswordStrength()">
+
+                <div id="strength-bar" style="width: 100%; height: 10px; background-color: #e0e0e0; margin-top: 5px;"> <!-- style done by AI -->
+                    <div id="strength-indicator" style="height: 100%; width: 0; background-color: red;"></div>
+                </div>
+
+                <label for="confirm_password">Confirm New Password:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+
+                <input type="submit" value="Change Password">
+            </form>
+        </div>
+
+        <div id="changeImageForm" class="change-image">
+            <button class="close-modal" onclick="hideChangeImage()">×</button>
+            <h3>Change Profile Pic</h3>
+            <form method="post" action="{{ url_for('change_image') }}" enctype="multipart/form-data">
+                <label for="imageUpload">Upload New Profile Pic:</label>
+                <input type="file" id="imageUpload" name="imageUpload" accept="image/*" required>
+                <input type="submit" value="Change Picture">
+            </form>
+        </div>
+
+    </div>
+
+    <h2>Your Timetable</h2>
+
+    <div class="container">
+        <h1>Update Your Location Manually</h1>
+        <form action="/update" method="post">
+            <label class="label" for="location">Select Location:</label>
+            <select class="dd" id="location" name="location">
+                {% for location in locations %}
+                    <option value="{{ location }}">{{ location }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn" type="submit">Update Location</button>
+        </form>
+    </div>
+    <button onclick="ShowMaps()" class="Maps">Maps</button>
+    <div>
+        <button onclick="ShowTraditional(this)" class="timeTable-View-button">Traditional</button>
+        <button onclick="ShowList(this)" class="timeTable-View-button active">List View</button>
+    </div>
+    <div class="TimeTable">
+        <table>
+            <thead>
+                <tr>
+                    {% for day in days %}
+                        <th>{{ day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for day in days %}
+                        <td>
+                            {% for entry in timeTable if days[entry[0]] == day and entry[5] == current_week %}
+                                {% set is_now = (entry[0] == current_day) and (entry[5] == current_week) and (entry[1] <= current_time <= entry[2] if entry[2] else '24:00') %}
+                                <div class="{{ 'highlighted_lesson' if is_now else 'lesson' }}">
+                                    <strong>{{ entry[3] }}</strong><br>
+                                    {{ entry[1] }} - {{ entry[2] }}<br>
+                                    {{ entry[4] }}<br>
+                                    {{ entry[6] }}
+                                </div>
+                            {% endfor %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="listView">
+        <table>
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Subject</th>
+                    <th>Location</th>
+                    <th>Week</th>
+                    <th>Teacher</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="7" class="headder">Last - Now - Next</td></tr>
+                {% if last is not none %}
+                    {% set row = timeTable[last] %}
+                    <tr class="summary-last">
+                        <td>{{ days[row[0]] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ weeks[row[5]-1] }}</td>
+                        <td>{{ row[6] }}</td>
+                    </tr>
+                {% endif %}
+
+                {% if last is not none %}
+                    {% set row = timeTable[last+1] %}
+                    <tr class="summary-now">
+                        <td>{{ days[row[0]] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ weeks[row[5]-1] }}</td>
+                        <td>{{ row[6] }}</td>
+                    </tr>
+                {% endif %}
+
+                {% if next is not none %}
+                    {% set row = timeTable[next] %}
+                    <tr class="summary-next">
+                        <td>{{ days[row[0]] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ weeks[row[5]-1] }}</td>
+                        <td>{{ row[6] }}</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+            <tr><td colspan="7" class="gap"></td></tr>
+            <tbody>
+                <tr><td colspan="7" class="headder">Full TimeTable</td></tr>
+                {% for row in timeTable %}
+                    {% set is_now = (row[0] == current_day) and (row[5] == current_week) and (row[1] <= current_time <= row[2] if row[2] else '24:00') %}
+                    <tr class="{{ 'highlight' if is_now else '' }}">
+                        <td>{{ days[row[0]] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ weeks[row[5]-1] }}</td>
+                        <td>{{ row[6] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="map" style="width: 100%">
+        <iframe id="mapFrame"
+            width="100%"
+            height="600"
+            frameborder="0"
+            scrolling="no"
+            marginheight="0"
+            marginwidth="0">
+        </iframe>
+    </div>
+    <script>
+        window.FLASK_DATA = {
+            lesson_location: "{{ lesson_location }}"
+        };
+
+        function checkPasswordStrength() {
+            const password = document.getElementById('new_password').value;
+            const bar = document.getElementById('strength-indicator');
+            let strength = 0;
+
+            if (password.length >= 8) strength += 1;
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[a-z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[#,!,£,$.%,^,&,*,(,),?,>,<]/.test(password)) strength += 1;
+
+            switch (strength) {
+                case 0:
+                    bar.style.width = '0%';
+                    bar.style.backgroundColor = 'red';
+                    break;
+                case 1:
+                    bar.style.width = '20%';
+                    bar.style.backgroundColor = 'red';
+                    break;
+                case 2:
+                    bar.style.width = '40%';
+                    bar.style.backgroundColor = 'orange';
+                    break;
+                case 3:
+                    bar.style.width = '60%';
+                    bar.style.backgroundColor = 'yellow';
+                    break;
+                case 4:
+                    bar.style.width = '80%';
+                    bar.style.backgroundColor = 'lightgreen';
+                    break;
+                case 5:
+                    bar.style.width = '100%';
+                    bar.style.backgroundColor = 'green';
+                    break;
+            }
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/side-bar.js' ) }}"></script>
+    <script src="{{ url_for('static', filename='js/switch-timetables.js' ) }}"></script>
+    <script src="{{ url_for('static', filename='js/get-location.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<html>
+<head>
+    <title>Admin Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-adminPage.css') }}">
+    <script>
+        function setPage(pageName) {
+            document.getElementById('admin-iframe').src = "/" + pageName;
+        }
+    </script>
+</head>
+<body>
+
+    <div>
+        <button class="settings-btn" onclick="Panel()">Settings ⚙️</button>
+        <div id="sidePanel" class="side-panel">
+            <a href="{{ url_for('logout') }}">Logout</a>
+            <a onclick="showChangePassword()">Change Password</a>
+        </div>
+
+        <div id="changePasswordForm" class="change-password">
+            <button class="close-modal" onclick="hideChangePassword()">×</button>
+            <h3>Change Password</h3>
+            <form method="post" action="{{ url_for('change_password') }}">
+                <label for="current_password">Current Password:</label>
+                <input type="password" id="current_password" name="current_password" required>
+
+                <label for="new_password">New Password:</label>
+                <input type="password" id="new_password" name="new_password" required>
+
+                <label for="confirm_password">Confirm New Password:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+
+                <input type="submit" value="Change Password">
+            </form>
+        </div>
+
+        <div id="changeImageForm" class="change-image">
+            <button class="close-modal" onclick="hideChangeImage()">×</button>
+            <h3>Change Profile Pic</h3>
+            <form method="post" action="{{ url_for('change_image') }}" enctype="multipart/form-data">
+                <label for="imageUpload">Upload New Profile Pic:</label>
+                <input type="file" id="imageUpload" name="imageUpload" accept="image/*" required>
+                <input type="submit" value="Change Picture">
+            </form>
+        </div>
+
+    </div>
+
+    <h1>Welcome to the Admin Page</h1>
+    <div>
+        <a href="#AddAccounts" onclick="setPage('sub/adminAddAccount')">Add Account</a>
+        <a href="#RemoveAccounts" onclick="setPage('sub/adminRemoveAccount')">Remove Account</a>
+        <a href="#Accounts" onclick="setPage('sub/adminViewAccounts')">View Accounts</a>
+        <a href="#SQL" onclick="setPage('sub/adminSQLQuery')">SQL Query</a>
+        <a href="#logs" onclick="setPage('sub/adminViewLogs')">View Logs</a>
+        <a href="#SendEmain" onclick="setPage('sub/adminSendEmail')">Send Email</a>
+    </div>
+    <div>
+        <iframe id="admin-iframe" class="admin-iframe"></iframe>
+    </div>
+<script src="{{ url_for('static', filename='js/side-bar.js') }}"></script>
+</body>
+</html>

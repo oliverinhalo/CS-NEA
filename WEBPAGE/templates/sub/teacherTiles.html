@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-teacherTiles.css') }}">
+    <title>Teacher</title>
+</head>
+<body>
+    <form class="inputs" method="get">
+        <input type="text" class="SearchName" id="SearchName" name="SearchName" onchange="this.form.submit()" placeholder="Search Name">
+
+        <div class="dropdown-checkbox" id="houseDropdown">
+            <div class="dropdown-btn">Select Houses ▾</div>
+            <div class="dropdown-content">
+                <label>
+                    <input type="checkbox" class="select-all" data-group="house" 
+                        {% if not request.args.getlist("house") %}checked{% endif %}>
+                    <strong>All</strong>
+                </label>
+                {% set current_houses = request.args.getlist("house") %}
+                {% for h in ["House 1", "House 2", "House 3", "House 4", "House 5", "House 6", "House 7"] %}
+                    <label>
+                        <input type="checkbox" name="house" value="{{ h }}"
+                            {% if h in current_houses %}checked{% endif %} 
+                            class="item-checkbox" data-group="house">
+                        {{ h }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="dropdown-checkbox" id="formDropdown">
+            <div class="dropdown-btn">Select Form ▾</div>
+            <div class="dropdown-content">
+                <label>
+                    <input type="checkbox" class="select-all" data-group="form" 
+                        {% if not request.args.getlist("form") %}checked{% endif %}>
+                    <strong>All</strong>
+                </label>
+                {% set current_forms = request.args.getlist("form") %}
+                {% for f in ["Form A", "Form B", "Form C", "Form D", "Form E", "Form F", "Form G"] %}
+                    <label>
+                        <input type="checkbox" name="form" value="{{ f }}"
+                            {% if f in current_forms %}checked{% endif %} 
+                            class="item-checkbox" data-group="form">
+                        {{ f }}
+                    </label>
+                {% endfor %}
+            </div>
+            <script src="{{ url_for('static', filename='js/dropdown.js') }}"></script>
+        </div>
+        
+        <input type="text" class="SearchRoom" id="SearchRoom" name="SearchRoom" onchange="this.form.submit()" placeholder="Search Room">
+
+        <div>
+            <select name="limit" id="limit" class="dropdown" onchange="this.form.submit()">
+                {% set current_limit = request.args.get("limit", "50") %}
+                <option value="20" {{ "selected" if current_limit == "20" else "" }}>Show 20</option>
+                <option value="50" {{ "selected" if current_limit == "50" else "" }}>Show 50</option>
+                <option value="100" {{ "selected" if current_limit == "100" else "" }}>Show 100</option>
+                <option value="1000" {{ "selected" if current_limit == "1000" else "" }}>Show All</option>
+            </select>
+        </div>
+    </form>
+
+    {% set house_colors = ["#FF6F61", "#6B5B95", "#88B04B", "#F7CAC9", "#92A8D1", "#FFB347", "#009688"] %}
+    {% set form_map = {"A":1, "B":2, "C":3, "D":4, "E":5, "F":6, "G":7} %}
+    {% set form_colors = ["#e57373", "#64b5f6", "#81c784", "#ffb74d", "#ba68c8", "#4db6ac", "#ffd54f"] %}
+
+    <div class="cards">
+        {% if not people %}
+            <p>No results found.</p>
+        {% else %}
+            {% for person in people %}
+            <div class="card" style="background-color: {{ house_colors[(person[3].replace('House ', '')|int) - 1] }};">
+                {% set image_file = person[0].replace("\\", "/") if person[0] else 'None.png' %}
+                <img class="img" src="{{ url_for('static', filename='img/' + image_file) }}" alt="Profile Picture" style="border: 5px solid {{ form_colors[form_map[person[4].replace('Form ', '')] - 1] }};">
+                <div class="card-text">
+                    <h2>{{ person[1] }}-{{ person[2][0:3] }}</h2>
+                    <p>{{ person[3].replace(" ", ": ") }}</p>
+                    <p>{{ person[4].replace(" ", ": ") }}</p>
+                </div>
+                <div class="lesson">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Expected</th>
+                                <th>Actual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="items">
+                                {% macro abbreviate(subject) %}
+                                    {%- set mapping = {
+                                        "Geography": "Geo",
+                                        "Physics": "Phys",
+                                        "Biology": "Bio",
+                                        "Drama": "Drama",
+                                        "Classics": "Classics",
+                                        "Design": "Design",
+                                        "Art and Ceramics": "Art&Cer",
+                                        "Ceramics": "Cer",
+                                        "Computer Science": "CS",
+                                        "TPE": "TPE",
+                                        "German": "Ger",
+                                        "German Conversation": "Ger Conv",
+                                        "Chemistry": "Chem",
+                                        "Wellbeing": "WB",
+                                        "Music": "Music",
+                                        "English": "English",
+                                        "History": "History",
+                                        "Mathematics": "Maths",
+                                        "French": "Fr",
+                                        "French Conversation": "Fr Conv",
+                                        "Spanish": "Spa",
+                                        "Spanish Conversation": "Spa Conv",
+                                        "Greek": "Greek",
+                                        "Latin": "Latin",
+                                        "Supervised Study": "SupStu",
+                                        "Learning Support": "LS",
+                                        "Library Study": "LibStu",
+                                        "EAL": "EAL",
+                                        "SESC Sports Science": "SS Sci",
+                                        "SESC Jewellery": "SS Jew",
+                                        "SESC Design": "SS Des",
+                                        "SESC Art": "SS Art",
+                                        "SESC Drama": "SS Dra",
+                                        "SESC Sustainability": "SS Sus",
+                                        "SESC Ancient World": "SS AncW",
+                                        "SESC MT Pathway": "SS MT",
+                                        "Economics": "Econ",
+                                        "History of Art": "HistArt",
+                                        "Politics": "Pol",
+                                        "Classical Civilisation": "ClasCiv",
+                                        "Psychology": "Psych",
+                                        "Textiles": "Tex",
+                                        "Global Politics": "GlobPol",
+                                        "Theory of Knowledge": "TOK",
+                                        "Mathematics (AI)": "Maths AI",
+                                        "Mathematics (AA)": "Maths AA",
+                                        "Environmental Systems": "EnvSys",
+                                        "Philosophy": "Phil",
+                                        "Sports Science": "SportSci",
+                                        "IB meeting": "IB Mtg"
+                                    } -%}
+
+                                    {{ mapping.get(subject, subject) }}
+                                {% endmacro %}
+
+                                {% set display_value = abbreviate(person[5])%}
+
+                                <td>{{ display_value }}</td>
+                                <td>{{ display_value }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/TeacherTiles-AutoScroll.js') }}"></script>
+</body>
+</html>

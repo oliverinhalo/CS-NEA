@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multi-Factor Authentication</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-mfa.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Multi-Factor Authentication</h1>
+        <form method="POST" action="/multi_factor_auth">
+            <label for="emailType">Using you {{ emailType }} email: {{ email  }}</label>
+            <br>
+            <label for="code">Enter the MFA code sent to {{ email }}:</label>
+            <input type="text" id="code" name="code" required>
+            <button type="submit">Verify</button>
+        </form>
+    </div>
+    <div>
+        error: {{ error }}
+    </div>
+</body>
+</html>

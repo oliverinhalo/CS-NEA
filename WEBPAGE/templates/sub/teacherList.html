@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-teacherList.css') }}">
+    <title>Teacher</title>
+</head>
+<body>
+    <h2>Teacher List</h2>
+    <div>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Current Lesson</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for person in people %}
+                <tr>
+                    <td>{{ person[0] }}</td>
+                    <td>{{ person[1] }}</td>
+                    <td>{{ person[2] }}</td>
+                {% if person[3] == 0 %}
+                    <td>Less GOOD</td>
+                {% elif person[3] == 1 %}
+                    <td>GOOD</td>
+                {% else %}
+                    <td>BAD</td>
+                {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+/* AI STYLING */
+/* style-adminViewLogs.css */
+:root {
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --header: #1f2937;
+  --muted: #6b7280;
+  --border: #d1d5db;
+  --radius: 8px;
+  --danger: #eb1426;
+  --warning: #f7980a;
+  --success: #8fffa9;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--header);
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  margin-bottom: 24px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Filter buttons styling */
+.filter-btn {
+  padding: 8px 16px;
+  margin: 0 4px 16px 4px;
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  border-color: var(--header);
+  color: var(--header);
+}
+
+.filter-btn.active {
+  background: var(--header);
+  color: white;
+  border-color: var(--header);
+}
+
+.filter-btn.active:hover {
+  background: #374151;
+}
+
+table {
+  width: 100%;
+  max-width: 95%; /* nearly fills the screen */
+  border-collapse: collapse;
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+thead {
+  background: #e5e7eb;
+}
+
+thead th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody td {
+  padding: 12px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Alternating row backgrounds */
+tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+/* Override background color dynamically from Jinja inline styles */
+tbody tr[style] td {
+  color: #111;
+  font-weight: 500;
+}
+
+/* Highlight colors */
+tbody tr[style*="#eb1426"] td {
+  background: var(--danger);
+  color: #fff;
+}
+tbody tr[style*="#f7980a"] td {
+  background: var(--warning);
+  color: #111;
+}
+tbody tr[style*="#8fffa9"] td {
+  background: var(--success);
+  color: #111;
+}
+
+/* Responsive: table scroll */
+@media(max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+}
